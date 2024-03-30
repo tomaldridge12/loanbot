@@ -149,16 +149,11 @@ class Player:
 
     def get_end_of_match_stats(self) -> Tuple[int, float, int, int]:
         player_info = self.match_info['player_info']
-        player_stats = player_info['stats']['stats']
+        player_stats = player_info['stats'][0]['stats']
         rating = player_stats['FotMob rating']['stat']['value']
         goals = player_stats['Goals']['stat']['value']
         assists = player_stats['Assists']['stat']['value']
-
-        time_subbed_on = self.match_info['timeSubbedOn']
-        time_subbed_off = self.match_info['timeSubbedOff']
-        match_started = time_subbed_on if time_subbed_on != "None" else 0 
-        match_finished = time_subbed_off if time_subbed_off != "None" else 90
-        minutes_played = match_finished - match_started
+        minutes_played = player_stats['Minutes played']['stat']['value']
 
         return minutes_played, rating, goals, assists
 
