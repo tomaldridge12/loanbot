@@ -1,90 +1,14 @@
 import json
-import os
 import threading
-from datetime import datetime, timedelta, timezone
-from enum import Enum
+
 from time import sleep
-from typing import Optional, Tuple, Union
-from queue import Queue
+from typing import List
 
-from mobfot.client import MobFot
+from football import FotMob, Player
+from utils import GameEvent, TweepyClient
 
-from player import Player
-from utils import TweepyClient, GameEvent
-
-class FotMob(MobFot):
-    def __init__(self, **kwargs):
-        super(FotMob, self).__init__(kwargs)
-        self.all_leagues_url = f"{self.BASE_URL}/allLeagues?"
-        self.teams_seasons_stats_url = f"{self.BASE_URL}/teamseasonstats?"
-        self.player_url = f"{self.BASE_URL}/playerData?"
-        self.search_url = f"{self.BASE_URL}/searchapi?"
-
-    def get_next_match_id(self, player: Player):
-        '''
-        Get the next upcoming match for a given Player.
-
-        args:
-            player (Player): the Player object for a given player
-        returns:
-            int: the match ID 
-        '''
-        team_details = self.get_team(player.team_id, tab="fixtures")
-        next_match_id = team_details["fixtures"]["allFixtures"]["nextMatch"]["id"]
-        return next_match_id
-    
-    def get_player_details_from_match(self, player: Player, match_id: int) -> Union[str, dict]:
-        '''
-        Get the player details from a given match.
-
-        args:
-            player (Player): the player to get the match details for
-        returns:
-            dict: the API response for the player
-            str: error message
-        '''
-        match_id = self.get_next_match_id(player)
-        match_details = self.get_match_details(match_id)
-
-        match_date = datetime.fromisoformat(match_details["general"]["matchTimeUTCDate"])
-        time_difference = match_date - datetime.now(timezone.utc)
-
-        if time_difference < timedelta(hours=1):
-            player_information = None
-            started = match_details["general"]["started"]
-            finished = match_details["general"]["finished"]
-            lineup = match_details["content"]["lineup"]["lineup"]
-
-            for team in lineup:
-                if team["teamId"] == player.team_id:
-                    team_lineup = team
-                    break
-
-            for position in team_lineup["players"]:
-                for _player in position:
-                    if _player["id"] == str(player.id):
-                        player_information = _player
-                        player.starting = True
-                        break
-
-            for _player in team_lineup["bench"]:
-                if _player["id"] == str(player.id):
-                    player_information = _player
-                    break    
-
-            if not player_information:
-                return "Player is not in lineup"
-
-            return {"player_info" : player_information,
-                    "match_details" : match_details,
-                    "match_id" : match_id,
-                    "started" : started,
-                    "finished" : finished,
-                    "match_date" : match_date}
-        else:
-            return "No lineup available yet"
-    
-def hourly_update_players(players):
+   
+def hourly_update_players(players: List[Player]) -> None:
     # repeat this every hour
     while not stop_event.is_set():
         for player in players:
@@ -93,7 +17,7 @@ def hourly_update_players(players):
             player.match_info = player_infomration
         sleep(60)
 
-def minutely_update_events(players):
+def minutely_update_events(players: List[Player]) -> None:
     # repeat this every couple of minutes
     while not stop_event.is_set():
         
@@ -124,7 +48,7 @@ def minutely_update_events(players):
                         player.in_match = False
 
                 # get player event details
-                player.handle_events(tc)
+                player.handle_events(tc, fm)
         sleep(10)
 
 if __name__ == "__main__":
@@ -142,6 +66,9 @@ if __name__ == "__main__":
 
     stop_event = threading.Event()
 
+    # hourly_update.daemon = True
+    # events_update.daemon = True
+
     hourly_update.start()
     events_update.start()
     
@@ -152,6 +79,6 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("Exiting...")
         stop_event.set()
-        hourly_update.join()
-        events_update.join()
+        # hourly_update.join()
+        # events_update.join()
             

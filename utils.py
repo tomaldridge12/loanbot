@@ -1,5 +1,4 @@
 from enum import Enum
-import os
 
 import tweepy
 from dotenv import dotenv_values
@@ -19,12 +18,11 @@ class GameEvent(Enum):
 class TweepyClient:
     def __init__(self):
         config = dotenv_values(".env")
-        print(config)
 
         self.client = tweepy.Client(bearer_token=config["BEARER_TOKEN"], consumer_key=config["API_KEY"], consumer_secret=config["API_KEY_SECRET"],
                                     access_token=config["ACCESS_TOKEN"], access_token_secret=config["ACCESS_TOKEN_SECRET"])
 
-    def tweet(self,string: str):
+    def tweet(self,string: str) -> None:
         try:
             self.client.create_tweet(text=string, user_auth=True)
         except Exception as e:

@@ -8,6 +8,71 @@
         "id" : 1197655,
         "team_id" : 10261,
         "team_name" : "Newcastle United"
+    },
+    "Lucas Bergstrm" : {
+        "id" : 1096396,
+        "team_id" : 8501,
+        "team_name" : "Brommapojkarna United"
+    },
+    "Armando Broja" : {
+        "id" : 1077975,
+        "team_id" : 9879,
+        "team_name" : "Fulham"
+    },
+    "Andrey Santos" : {
+        "id" : 1372921,
+        "team_id" : 9848,
+        "team_name" : "Strasbourg"
+    },
+    "Angelo Gabriel" : {
+        "id" : 1199757,
+        "team_id" : 9848,
+        "team_name" : "Strasbourg"
+    },
+    "David Datro Fofana" : {
+        "id" : 1207581,
+        "team_id" : 8191,
+        "team_name" : "Burnley"
+    },
+    "Jamie Cumming" : {
+        "id" : 801477,
+        "team_id" : 8653,
+        "team_name" : "Oxford United"
+    },
+    "Eddie Beach" : {
+        "id" : 1421811,
+        "team_id" : 6189,
+        "team_name" : "Gateshead FC"
+    },
+    "Alex Matos" : {
+        "id" : 1202031,
+        "team_id" : 9796,
+        "team_name" : "Huddersfield Town"
+    },
+    "Bashir Humphreys" : {
+        "id" : 1238058,
+        "team_id" : 10003,
+        "team_name" : "Swansea City"
+    },
+    "Mason Burstow" : {
+        "id" : 1293027,
+        "team_id" : 8472,
+        "team_name" : "Sunderland"
+    },
+    "Omari Hutchinson" : {
+        "id" : 1215652,
+        "team_id" : 9902,
+        "team_name" : "Ipswich Town"
+    },
+    "Charlie Webster" : {
+        "id" : 1197515,
+        "team_id" : 10228,
+        "team_name" : "SC Heerenveen"
+    },
+    "Hakim Ziyech" : {
+        "id" : 360559,
+        "team_id" : 8637,
+        "team_name" : "Galatasaray"
     }
 }
 
