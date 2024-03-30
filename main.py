@@ -61,20 +61,22 @@ class FotMob(MobFot):
                     break
 
             for position in team_lineup["players"]:
-                for p in position:
-                    if p["id"] == str(player.id):
-                        player_information = p
+                for _player in position:
+                    if _player["id"] == str(player.id):
+                        player_information = _player
+                        player.starting = True
                         break
 
-            for p in team_lineup["bench"]:
-                if p["id"] == str(player.id):
-                    player_information = p
+            for _player in team_lineup["bench"]:
+                if _player["id"] == str(player.id):
+                    player_information = _player
                     break    
 
             if not player_information:
                 return "Player is not in lineup"
 
             return {"player_info" : player_information,
+                    "match_details" : match_details,
                     "match_id" : match_id,
                     "started" : started,
                     "finished" : finished,
@@ -83,39 +85,46 @@ class FotMob(MobFot):
             return "No lineup available yet"
     
 def hourly_update_players(players):
-    print("updating fixtures...")
     # repeat this every hour
     while not stop_event.is_set():
         for player in players:
             match_id = fm.get_next_match_id(player)
             player_infomration = fm.get_player_details_from_match(player, match_id)
             player.match_info = player_infomration
-        print("sleeping updates")
         sleep(60)
 
 def minutely_update_events(players):
     # repeat this every couple of minutes
     while not stop_event.is_set():
-        print("updating events...")
+        
         for player in players:
             if isinstance(player.match_info, dict): # otherwise error message from get_player_details_from_match
                 # Get most up to date match details
                 player.match_info = fm.get_player_details_from_match(player, player.match_info["match_id"])
+                
+                # tweet starting lineup or bench lineup
+                if not player.tweeted_lineup:
+                    if player.starting:
+                        player.events_queue.put(GameEvent.STARTING_LINEUP)
+                    else:
+                        player.events_queue.put(GameEvent.BENCH_LINEUP)
+                    player.tweeted_lineup = True
+                
+                # tweet kickoff tweet, but check if kickoff tweet already tweeted
                 if player.match_info["started"]:
-                    # tweet kickoff tweet, but check if kickoff tweet already tweeted
                     if not player.in_match:
                         player.events_queue.put(GameEvent.STARTED)
                         player.in_match = True
+                
+                # tweet match end tweet, i.e. player performance etc
+                # clear player.match_info
                 if player.match_info["finished"]:
-                    # tweet match end tweet, i.e. player performance etc
-                    # clear player.match_info
                     if player.in_match:
                         player.events_queue.put(GameEvent.FINISHED)
                         player.in_match = False
 
                 # get player event details
                 player.handle_events(tc)
-        print("sleeping events")
         sleep(10)
 
 if __name__ == "__main__":

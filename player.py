@@ -13,6 +13,8 @@ class Player:
         self.previous_events = {}
         self.events_queue = Queue()
         self.in_match = False
+        self.starting = False
+        self.tweeted_lineup = False
 
     def __repr__(self):
         return f'{self.name}, {self.team_name}'
@@ -108,8 +110,23 @@ class Player:
                     break
                 case GameEvent.FINISHED:
                     minutes_played, rating, goals, assists = self.get_end_of_match_stats()
-                    finished_message = f"The {self.team_name} match with {self.name} has finished, he played {minutes_played} minutes and had a rating of {rating}!\n\n#CFC #Chelsea"
+                    if goals > 0 and assists > 0:
+                        finished_message = f"""The {self.team_name} match with {self.name} has finished, he played {minutes_played} minutes, scoring {goals} goal(s) and assisting {assists} time(s)! FotMob rated him {rating}.\n\n#CFC #Chelsea"""
+                    elif goals > 0:
+                        finished_message = f"""The {self.team_name} match with {self.name} has finished, he played {minutes_played} minutes, scoring {goals} goal(s)! FotMob rated him {rating}.\n\n#CFC #Chelsea"""
+                    elif assists > 0:
+                        finished_message = f"""The {self.team_name} match with {self.name} has finished, he played {minutes_played} minutes, assisting {assists} time(s)! FotMob rated him {rating}.\n\n#CFC #Chelsea"""
+                    else:
+                        finished_message = f"""The {self.team_name} match with {self.name} has finished, he played {minutes_played} minutes and had a rating of {rating}!\n\n#CFC #Chelsea"""
                     tweet_client.tweet(finished_message)
+                    break
+                case GameEvent.STARTING_LINEUP:
+                    starting_message = f"{self.name} is in the starting lineup at {self.match_info["player_info"]["position"]} for {self.team_name} in the {self.match_info["general"]["parentLeagueName"]}!\n\n#CFC #Chelsea"
+                    tweet_client.tweet(starting_message)
+                    break
+                case GameEvent.BENCH_LINEUP:
+                    bench_message = f"{self.name} is on the bench for {self.team_name} in the {self.match_info["general"]["parentLeagueName"]}!\n\n#CFC #Chelsea"
+                    tweet_client.tweet(bench_message)
                     break
 
     def get_end_of_match_stats(self) -> Tuple[int, float, int, int]:

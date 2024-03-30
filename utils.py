@@ -13,6 +13,8 @@ class GameEvent(Enum):
     RED_CARD = 6
     STARTED = 7
     FINISHED = 8
+    STARTING_LINEUP = 9
+    BENCH_LINEUP = 10
 
 class TweepyClient:
     def __init__(self):
