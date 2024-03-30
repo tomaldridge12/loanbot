@@ -40,4 +40,4 @@ class TweepyClient:
         b.seek(0)
 
         ret = self.client_v1.media_upload(filename="dummy", file=b)
-        self.client_v2.create_tweet(status=string, media_ids=[ret.media_id_string])
+        self.client_v2.create_tweet(text=string, media_ids=[ret.media_id_string])

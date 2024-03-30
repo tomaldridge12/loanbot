@@ -90,19 +90,23 @@ class Player:
                     image = generate_image(self, "goal", score_dict)
                     tweet_client.tweet_with_image(goal_message, image)
                     break
+                
                 case GameEvent.ASSIST:
                     assist_message = f"{self.name} has assisted!\n\n{score_string}\n#CFC #Chelsea"
                     image = generate_image(self, "assist", score_dict)
                     tweet_client.tweet(assist_message)
                     break
+                
                 case GameEvent.YELLOW_CARD:
                     yellow_card_message = f"{self.name} has received a yellow card!\n\n{score_string}\n#CFC #Chelsea"
                     tweet_client.tweet(yellow_card_message)
                     break
+                
                 case GameEvent.RED_CARD:
                     red_card_message = f"{self.name} has received a red card!\n\n{score_string}\n#CFC #Chelsea"
                     tweet_client.tweet(red_card_message)
                     break
+                
                 case GameEvent.SUB_ON:
                     sub_on_message = f"{self.name} has been subbed on at the {value} minute!\n\n{score_string}\n#CFC #Chelsea"
                     tweet_client.tweet(sub_on_message)
@@ -111,6 +115,7 @@ class Player:
                     sub_off_message = f"{self.name} has been subbed off at the {value} minute!\n\n{score_string}\n#CFC #Chelsea"
                     tweet_client.tweet(sub_off_message)
                     break
+                
                 case GameEvent.STARTED:
                     if self.starting:
                         started_message = f"The {self.team_name} match with {self.name} has started!\n\n{score_string}\n#CFC #Chelsea"
@@ -118,6 +123,7 @@ class Player:
                         started_message = f"The {self.team_name} match with {self.name} has started! He's currently on the bench.\n\n{score_string}\n#CFC #Chelsea"                   
                     tweet_client.tweet(started_message)
                     break
+                
                 case GameEvent.FINISHED:
                     minutes_played, rating, goals, assists = self.get_end_of_match_stats()
                     if goals > 0 and assists > 0:
@@ -130,10 +136,12 @@ class Player:
                         finished_message = f"""The {self.team_name} match with {self.name} has finished, he played {minutes_played} minutes and had a rating of {rating}!\n\n{score_string}\n#CFC #Chelsea"""
                     tweet_client.tweet(finished_message)
                     break
+                
                 case GameEvent.STARTING_LINEUP:
-                    starting_message = f"{self.name} is in the starting lineup at {self.match_info["player_info"]["position"]} for {self.team_name} in the {self.match_info["general"]["parentLeagueName"]}!\n\n#CFC #Chelsea"
+                    starting_message = f"{self.name} is in the starting lineup at {self.match_info["player_info"]["position"]} for {self.team_name} in the {self.match_info["match_details"]["general"]["parentLeagueName"]}!\n\n#CFC #Chelsea"
                     tweet_client.tweet(starting_message)
                     break
+                
                 case GameEvent.BENCH_LINEUP:
                     bench_message = f"{self.name} is on the bench for {self.team_name} in the {self.match_info["match_details"]["general"]["parentLeagueName"]}!\n\n#CFC #Chelsea"
                     tweet_client.tweet(bench_message)
