@@ -1,0 +1,28 @@
+{
+    "Ian Maatsen" : {
+        "id" : 966026,
+        "team_id" : 9789,
+        "team_name" : "Borussia Dortmund"
+    },
+    "Jobe Bellingham" : {
+        "id" : 1420266,
+        "team_id" : 10163, 
+        "team_name" : "Sunderland"
+    },
+    "Crysencio Summerville" : {
+        "id" : 941213,
+        "team_id" : 8463,
+        "team_name" : "Leeds United"
+    },
+    "Trincao" : {
+        "id" : 732282,
+        "team_id" : 9768, 
+        "team_name" : "Sporting CP"
+    },
+    "Bogarin" : {
+        "id" : 618807,
+        "team_id" : 161730,
+        "team_name" : "Defensa y Justicia"
+    }
+}
+
