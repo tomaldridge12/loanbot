@@ -2,3 +2,6 @@
 *.ipynb
 *.txt
 __pycache__/
+*.png
+*.jpg
+*.otf

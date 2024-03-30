@@ -4,6 +4,7 @@ from typing import Tuple, Union
 
 from mobfot.client import MobFot
 
+from image import generate_image
 from utils import GameEvent, TweepyClient
 
 class Player:
@@ -82,14 +83,16 @@ class Player:
                 event, value = event
                 print(value)
             print(event)
-            _, score_string = fotmob_client.get_match_score(self.match_info["match_id"])
+            score_dict, score_string = fotmob_client.get_match_score(self.match_info["match_id"])
             match event:
                 case GameEvent.GOAL:
                     goal_message = f"{self.name} has scored a goal!\n\n{score_string}\n#CFC #Chelsea"
-                    tweet_client.tweet(goal_message)
+                    image = generate_image(self, "goal", score_dict)
+                    tweet_client.tweet_with_image(goal_message, image)
                     break
                 case GameEvent.ASSIST:
                     assist_message = f"{self.name} has assisted!\n\n{score_string}\n#CFC #Chelsea"
+                    image = generate_image(self, "assist", score_dict)
                     tweet_client.tweet(assist_message)
                     break
                 case GameEvent.YELLOW_CARD:
@@ -101,11 +104,11 @@ class Player:
                     tweet_client.tweet(red_card_message)
                     break
                 case GameEvent.SUB_ON:
-                    sub_on_message = f"{self.name} has been subbed on at {value} minutes!\n\n{score_string}\n#CFC #Chelsea"
+                    sub_on_message = f"{self.name} has been subbed on at the {value} minute!\n\n{score_string}\n#CFC #Chelsea"
                     tweet_client.tweet(sub_on_message)
                     break
                 case GameEvent.SUB_OFF:
-                    sub_off_message = f"{self.name} has been subbed off at {value} minutes!\n\n{score_string}\n#CFC #Chelsea"
+                    sub_off_message = f"{self.name} has been subbed off at the {value} minute!\n\n{score_string}\n#CFC #Chelsea"
                     tweet_client.tweet(sub_off_message)
                     break
                 case GameEvent.STARTED:

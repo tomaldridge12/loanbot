@@ -79,6 +79,6 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("Exiting...")
         stop_event.set()
-        # hourly_update.join()
-        # events_update.join()
+        hourly_update.join()
+        events_update.join()
             

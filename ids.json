@@ -73,6 +73,11 @@
         "id" : 360559,
         "team_id" : 8637,
         "team_name" : "Galatasaray"
+    },
+    "Harvey Barnes" : {
+        "id" : 760359,
+        "team_id" : 10261,
+        "team_name" : "Newcastle United"  
     }
 }
 
