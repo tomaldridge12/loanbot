@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from queue import Queue
-from typing import Tuple, Union
+from typing import Optional, Tuple, Union
 
 from mobfot.client import MobFot
 
@@ -148,7 +148,7 @@ class Player:
                     break
                 
                 case GameEvent.STARTING_LINEUP:
-                    starting_message = f"{self.name} is in the starting lineup at {self.match_info["player_info"]["position"]} for {self.team_name} in the {self.match_info["match_details"]["general"]["parentLeagueName"]}!\n\n#CFC #Chelsea"
+                    starting_message = f"{self.name} is in the starting lineup at {self.match_info["player_info"]["positionStringShort"]} for {self.team_name} in the {self.match_info["match_details"]["general"]["parentLeagueName"]}!\n\n#CFC #Chelsea"
                     tweet_client.tweet(starting_message)
                     break
                 
@@ -165,12 +165,13 @@ class Player:
             player_stats = player_info['stats'][0]['stats']
         except IndexError:
             return "Did not play"
+
         rating = player_stats['FotMob rating']['stat']['value']
         goals = player_stats['Goals']['stat']['value']
         assists = player_stats['Assists']['stat']['value']
         minutes_played = player_stats['Minutes played']['stat']['value']
 
-        return minutes_played, rating, goals, assists
+        return (minutes_played, rating, goals, assists)
 
 
 
@@ -196,7 +197,7 @@ class FotMob(MobFot):
         next_match_id = team_details["fixtures"]["allFixtures"]["nextMatch"]["id"]
         return next_match_id
     
-    def get_player_details_from_match(self, player: Player, match_id: int) -> Union[str, dict]:
+    def get_player_details_from_match(self, player: Player, match_id: Optional[int]) -> Union[str, dict]:
         '''
         Get the player details from a given match.
 
@@ -206,7 +207,8 @@ class FotMob(MobFot):
             dict: the API response for the player
             str: error message
         '''
-        match_id = self.get_next_match_id(player)
+        if not match_id:
+            match_id = self.get_next_match_id(player)
         match_details = self.get_match_details(match_id)
 
         match_date = datetime.fromisoformat(match_details["general"]["matchTimeUTCDate"])
