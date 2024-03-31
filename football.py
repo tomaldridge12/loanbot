@@ -125,15 +125,25 @@ class Player:
                     break
                 
                 case GameEvent.FINISHED:
-                    minutes_played, rating, goals, assists = self.get_end_of_match_stats()
-                    if goals > 0 and assists > 0:
-                        finished_message = f"""The {self.team_name} match with {self.name} has finished, he played {minutes_played} minutes, scoring {goals} goal(s) and assisting {assists} time(s)! FotMob rated him {rating}.\n\n{score_string}\n#CFC #Chelsea"""
-                    elif goals > 0:
-                        finished_message = f"""The {self.team_name} match with {self.name} has finished, he played {minutes_played} minutes, scoring {goals} goal(s)! FotMob rated him {rating}.\n\n{score_string}\n#CFC #Chelsea"""
-                    elif assists > 0:
-                        finished_message = f"""The {self.team_name} match with {self.name} has finished, he played {minutes_played} minutes, assisting {assists} time(s)! FotMob rated him {rating}.\n\n{score_string}\n#CFC #Chelsea"""
+                    resp = self.get_end_of_match_stats()
+                    if isinstance(resp, tuple):
+                        minutes_played, rating, goals, assists = resp
+                        played = True
                     else:
-                        finished_message = f"""The {self.team_name} match with {self.name} has finished, he played {minutes_played} minutes and had a rating of {rating}!\n\n{score_string}\n#CFC #Chelsea"""
+                        played = False
+                    
+                    if played:
+                        if goals > 0 and assists > 0:
+                            finished_message = f"""The {self.team_name} match with {self.name} has finished, he played {minutes_played} minutes, scoring {goals} goal(s) and assisting {assists} time(s)! FotMob rated him {rating}.\n\n{score_string}\n#CFC #Chelsea"""
+                        elif goals > 0:
+                            finished_message = f"""The {self.team_name} match with {self.name} has finished, he played {minutes_played} minutes, scoring {goals} goal(s)! FotMob rated him {rating}.\n\n{score_string}\n#CFC #Chelsea"""
+                        elif assists > 0:
+                            finished_message = f"""The {self.team_name} match with {self.name} has finished, he played {minutes_played} minutes, assisting {assists} time(s)! FotMob rated him {rating}.\n\n{score_string}\n#CFC #Chelsea"""
+                        else:
+                            finished_message = f"""The {self.team_name} match with {self.name} has finished, he played {minutes_played} minutes and had a rating of {rating}!\n\n{score_string}\n#CFC #Chelsea"""
+                    else:
+                        finished_message = f"""The {self.team_name} match with {self.name} has finished. He didn't come off the bench.\n\n#CFC #Chelsea"""
+                    
                     tweet_client.tweet(finished_message)
                     break
                 
@@ -149,7 +159,12 @@ class Player:
 
     def get_end_of_match_stats(self) -> Tuple[int, float, int, int]:
         player_info = self.match_info['player_info']
-        player_stats = player_info['stats'][0]['stats']
+        # TODO: add catch cases for this, if the player doesnt come off
+        # the bench then this will index out of range. 
+        try:
+            player_stats = player_info['stats'][0]['stats']
+        except IndexError:
+            return "Did not play"
         rating = player_stats['FotMob rating']['stat']['value']
         goals = player_stats['Goals']['stat']['value']
         assists = player_stats['Assists']['stat']['value']
