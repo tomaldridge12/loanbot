@@ -15,7 +15,7 @@ def hourly_update_players(players: List[Player]) -> None:
             match_id = fm.get_next_match_id(player)
             player_infomration = fm.get_player_details_from_match(player, match_id)
             player.match_info = player_infomration
-        sleep(60)
+        sleep(5 * 60)
 
 def minutely_update_events(players: List[Player]) -> None:
     # repeat this every couple of minutes
@@ -49,7 +49,7 @@ def minutely_update_events(players: List[Player]) -> None:
 
                 # get player event details
                 player.handle_events(tc, fm)
-        sleep(10)
+        sleep(30)
 
 if __name__ == "__main__":
     fm = FotMob()
