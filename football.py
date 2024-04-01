@@ -133,14 +133,19 @@ class Player:
                         played = False
                     
                     if played:
-                        if goals > 0 and assists > 0:
-                            finished_message = f"""The {self.team_name} match with {self.name} has finished, he played {minutes_played} minutes, scoring {goals} goal(s) and assisting {assists} time(s)! FotMob rated him {rating}.\n\n{score_string}\n#CFC #Chelsea"""
-                        elif goals > 0:
-                            finished_message = f"""The {self.team_name} match with {self.name} has finished, he played {minutes_played} minutes, scoring {goals} goal(s)! FotMob rated him {rating}.\n\n{score_string}\n#CFC #Chelsea"""
-                        elif assists > 0:
-                            finished_message = f"""The {self.team_name} match with {self.name} has finished, he played {minutes_played} minutes, assisting {assists} time(s)! FotMob rated him {rating}.\n\n{score_string}\n#CFC #Chelsea"""
+                        if self.match_info["player_info"]["position"] == "Keeper":
+                            minutes_played, rating, saves, conceded = resp
+                            finished_message = f"""The {self.team_name} match with {self.name} has finished, he played {minutes_played} minutes, making {saves} save(s) and conceding {conceded} goals. He had a rating of {rating}.\n\n{score_string}\n#CFC #Chelsea"""
                         else:
-                            finished_message = f"""The {self.team_name} match with {self.name} has finished, he played {minutes_played} minutes and had a rating of {rating}!\n\n{score_string}\n#CFC #Chelsea"""
+                            minutes_played, rating, goals, assists = resp
+                            if goals > 0 and assists > 0:
+                                finished_message = f"""The {self.team_name} match with {self.name} has finished, he played {minutes_played} minutes, scoring {goals} goal(s) and assisting {assists} time(s)! FotMob rated him {rating}.\n\n{score_string}\n#CFC #Chelsea"""
+                            elif goals > 0:
+                                finished_message = f"""The {self.team_name} match with {self.name} has finished, he played {minutes_played} minutes, scoring {goals} goal(s)! FotMob rated him {rating}.\n\n{score_string}\n#CFC #Chelsea"""
+                            elif assists > 0:
+                                finished_message = f"""The {self.team_name} match with {self.name} has finished, he played {minutes_played} minutes, assisting {assists} time(s)! FotMob rated him {rating}.\n\n{score_string}\n#CFC #Chelsea"""
+                            else:
+                                finished_message = f"""The {self.team_name} match with {self.name} has finished, he played {minutes_played} minutes and had a rating of {rating}!\n\n{score_string}\n#CFC #Chelsea"""
                     else:
                         finished_message = f"""The {self.team_name} match with {self.name} has finished. He didn't come off the bench.\n\n#CFC #Chelsea"""
                     
@@ -167,11 +172,18 @@ class Player:
             return "Did not play"
 
         rating = player_stats['FotMob rating']['stat']['value']
-        goals = player_stats['Goals']['stat']['value']
-        assists = player_stats['Assists']['stat']['value']
         minutes_played = player_stats['Minutes played']['stat']['value']
+        if self.match_info["player_info"]["position"] == "Keeper":
+            saves = player_stats['Saves']['stat']['value']
+            conceded = player_stats['Goals conceded']['stat']['value']
+            match_stats = (rating, minutes_played, saves, conceded)
+        else:
+            goals = player_stats['Goals']['stat']['value']
+            assists = player_stats['Assists']['stat']['value']
+            match_stats = (rating, minutes_played, goals, assists)
 
-        return (minutes_played, rating, goals, assists)
+
+        return match_stats
 
 
 

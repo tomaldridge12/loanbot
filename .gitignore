@@ -7,3 +7,6 @@ __pycache__/
 *.otf
 .env-old
 *.jfif
+sample-player.json
+sample-match.json
+sample-keeper.json

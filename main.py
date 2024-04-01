@@ -13,9 +13,12 @@ def hourly_update_players(players: List[Player]) -> None:
     while not stop_event.is_set():
         for player in players:
             match_id = fm.get_next_match_id(player)
-            player_infomration = fm.get_player_details_from_match(player, match_id)
-            player.match_info = player_infomration
-        sleep(5 * 60)
+            try:
+                player.match_info = fm.get_player_details_from_match(player, match_id)
+            except Exception as e:
+                print(e)
+                continue
+        sleep(30)
 
 def minutely_update_events(players: List[Player]) -> None:
     # repeat this every couple of minutes
@@ -24,8 +27,12 @@ def minutely_update_events(players: List[Player]) -> None:
         for player in players:
             if isinstance(player.match_info, dict): # otherwise error message from get_player_details_from_match
                 # Get most up to date match details
-                player.match_info = fm.get_player_details_from_match(player, player.match_info["match_id"])
-                
+                try:
+                    player.match_info = fm.get_player_details_from_match(player, player.match_info["match_id"])
+                except Exception as e:
+                    print(e)
+                    continue
+
                 # tweet starting lineup or bench lineup
                 if not player.tweeted_lineup:
                     if player.starting:
@@ -49,7 +56,7 @@ def minutely_update_events(players: List[Player]) -> None:
 
                 # get player event details
                 player.handle_events(tc, fm)
-        sleep(30)
+        sleep(10)
 
 if __name__ == "__main__":
     fm = FotMob()
