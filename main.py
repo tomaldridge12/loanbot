@@ -8,7 +8,7 @@ from time import sleep
 from typing import List
 
 from football import FotMob, Player
-from utils import GameEvent, TweepyClient
+from utils import GameEvent, ThreadSafeQueue, TweepyClient
 
    
 def hourly_update_players(players: List[Player], in_match_players: deque[Player]) -> None:
@@ -24,7 +24,7 @@ def hourly_update_players(players: List[Player], in_match_players: deque[Player]
                 continue
             if isinstance(player.match_info, dict):
                 if player.is_match_soon(player.match_info["match_details"]):
-                    in_match_players.append(player)
+                    in_match_players.put(player)
                     logging.info(f"Adding {player.name} to queue")
 
         sleep(600)
@@ -76,7 +76,7 @@ def minutely_update_events(in_match_players: deque[Player]) -> None:
 if __name__ == "__main__":
     fm = FotMob()
     tc = TweepyClient()
-    in_match_players = deque()
+    in_match_players = ThreadSafeQueue()
     logging.basicConfig(filename="log.log", level=logging.INFO)
 
     with open('ids.json', 'r') as f:

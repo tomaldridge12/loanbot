@@ -1,6 +1,8 @@
 import logging
 from enum import Enum
 from io import BytesIO
+from queue import Queue
+from threading import Lock
 
 import tweepy
 from dotenv import dotenv_values
@@ -46,3 +48,33 @@ class TweepyClient:
             logging.info("Tweeted with image")        
         except Exception as e:
             print(e)
+
+class ThreadSafeQueue:
+    def __init__(self):
+        self._queue = Queue()
+        self._lock = Lock()
+
+    def put(self, item):
+        with self._lock:
+            self._queue.put(item)
+
+    def get(self):
+        with self._lock:
+            return self._queue.get()
+
+    def remove(self, value):
+        with self._lock:
+            items = []
+            while not self._queue.empty():
+                item = self._queue.get()
+                if item != value:
+                    items.append(item)
+            for item in items:
+                self._queue.put(item)
+
+    def __iter__(self):
+        # Create a copy of the queue to iterate through
+        with self._lock:
+            items = list(self._queue.queue)
+        for item in items:
+            yield item
