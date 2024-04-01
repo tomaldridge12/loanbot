@@ -1,3 +1,4 @@
+import logging
 from enum import Enum
 from io import BytesIO
 
@@ -31,6 +32,7 @@ class TweepyClient:
     def tweet(self, string: str) -> None:
         try:
             self.client_v2.create_tweet(text=string, user_auth=True)
+            logging.debug("Tweeted")
         except Exception as e:
             print(e)
 
@@ -38,6 +40,9 @@ class TweepyClient:
         b = BytesIO()
         image.save(b, "PNG")
         b.seek(0)
-
-        ret = self.client_v1.media_upload(filename="dummy", file=b)
-        self.client_v2.create_tweet(text=string, media_ids=[ret.media_id_string])
+        try:
+            ret = self.client_v1.media_upload(filename="dummy", file=b)
+            self.client_v2.create_tweet(text=string, media_ids=[ret.media_id_string])
+            logging.debug("Tweeted with image")        
+        except Exception as e:
+            print(e)

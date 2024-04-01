@@ -1,5 +1,7 @@
 import json
+import logging
 import threading
+import traceback
 
 from time import sleep
 from typing import List
@@ -16,7 +18,8 @@ def hourly_update_players(players: List[Player]) -> None:
             try:
                 player.match_info = fm.get_player_details_from_match(player, match_id)
             except Exception as e:
-                print(e)
+                traceback.print_exc()
+                logging.debug(traceback.format_exc())
                 continue
         sleep(30)
 
@@ -25,12 +28,14 @@ def minutely_update_events(players: List[Player]) -> None:
     while not stop_event.is_set():
         
         for player in players:
+            logging.debug(f"Player: {player.name}")
             if isinstance(player.match_info, dict): # otherwise error message from get_player_details_from_match
                 # Get most up to date match details
                 try:
                     player.match_info = fm.get_player_details_from_match(player, player.match_info["match_id"])
                 except Exception as e:
-                    print(e)
+                    traceback.print_exc()
+                    logging.debug(traceback.format_exc())
                     continue
 
                 # tweet starting lineup or bench lineup
@@ -60,7 +65,8 @@ def minutely_update_events(players: List[Player]) -> None:
 
 if __name__ == "__main__":
     fm = FotMob()
-    tc = TweepyClient()
+    tc = TweepyClient()#
+    logging.basicConfig(filename="log.log")
 
     with open('ids.json', 'r') as f:
         player_data = json.load(f)

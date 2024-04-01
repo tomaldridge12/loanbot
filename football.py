@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta, timezone
 from queue import Queue
 from typing import Optional, Tuple, Union
@@ -86,37 +87,45 @@ class Player:
             score_dict, score_string = fotmob_client.get_match_score(self.match_info["match_id"])
             match event:
                 case GameEvent.GOAL:
+                    logging.debug(f"{self.name}: GameEvent.GOAL")
                     goal_message = f"{self.name} has scored a goal!\n\n{score_string}\n#CFC #Chelsea"
                     image = generate_image(self, "goal", score_dict)
                     tweet_client.tweet_with_image(goal_message, image)
                     break
                 
                 case GameEvent.ASSIST:
+                    logging.debug(f"{self.name}: GameEvent.ASSIST")
                     assist_message = f"{self.name} has assisted!\n\n{score_string}\n#CFC #Chelsea"
                     image = generate_image(self, "assist", score_dict)
                     tweet_client.tweet(assist_message)
                     break
                 
                 case GameEvent.YELLOW_CARD:
+                    logging.debug(f"{self.name}: GameEvent.YELLOW_CARD")
                     yellow_card_message = f"{self.name} has received a yellow card!\n\n{score_string}\n#CFC #Chelsea"
                     tweet_client.tweet(yellow_card_message)
                     break
                 
                 case GameEvent.RED_CARD:
-                    red_card_message = f"{self.name} has received a red card!\n\n{score_string}\n#CFC #Chelsea"
+                    logging.debug(f"{self.name}: GameEvent.RED_CARD")
+                    red_card_message = f"{self.name} has received a red card! He's been sent off!\n\n{score_string}\n#CFC #Chelsea"
                     tweet_client.tweet(red_card_message)
                     break
                 
                 case GameEvent.SUB_ON:
+                    logging.debug(f"{self.name}: GameEvent.SUB_ON")
                     sub_on_message = f"{self.name} has been subbed on at the {value} minute!\n\n{score_string}\n#CFC #Chelsea"
                     tweet_client.tweet(sub_on_message)
                     break
+                
                 case GameEvent.SUB_OFF:
+                    logging.debug(f"{self.name}: GameEvent.SUB_OFF")
                     sub_off_message = f"{self.name} has been subbed off at the {value} minute!\n\n{score_string}\n#CFC #Chelsea"
                     tweet_client.tweet(sub_off_message)
                     break
                 
                 case GameEvent.STARTED:
+                    logging.debug(f"{self.name}: GameEvent.STARTED")
                     if self.starting:
                         started_message = f"The {self.team_name} match with {self.name} has started!\n\n{score_string}\n#CFC #Chelsea"
                     else:
@@ -125,6 +134,7 @@ class Player:
                     break
                 
                 case GameEvent.FINISHED:
+                    logging.debug(f"{self.name}: GameEvent.FINISHED")
                     resp = self.get_end_of_match_stats()
                     if isinstance(resp, tuple):
                         minutes_played, rating, goals, assists = resp
@@ -153,12 +163,16 @@ class Player:
                     break
                 
                 case GameEvent.STARTING_LINEUP:
-                    starting_message = f"{self.name} is in the starting lineup at {self.match_info["player_info"]["positionStringShort"]} for {self.team_name} in the {self.match_info["match_details"]["general"]["parentLeagueName"]}!\n\n#CFC #Chelsea"
+                    logging.debug(f"{self.name}: GameEvent.STARTING_LINEUP")
+                    opponent = self.get_opponent()
+                    starting_message = f"{self.name} is in the starting lineup at {self.match_info["player_info"]["positionStringShort"]} for {self.team_name} against {opponent} in the {self.match_info["match_details"]["general"]["parentLeagueName"]}!\n\n#CFC #Chelsea"
                     tweet_client.tweet(starting_message)
                     break
                 
                 case GameEvent.BENCH_LINEUP:
-                    bench_message = f"{self.name} is on the bench for {self.team_name} in the {self.match_info["match_details"]["general"]["parentLeagueName"]}!\n\n#CFC #Chelsea"
+                    logging.debug(f"{self.name}: GameEvent.BENCH_LINEUP")
+                    opponent = self.get_opponent()
+                    bench_message = f"{self.name} is on the bench for {self.team_name} against {opponent} in the {self.match_info["match_details"]["general"]["parentLeagueName"]}!\n\n#CFC #Chelsea"
                     tweet_client.tweet(bench_message)
                     break
 
@@ -185,8 +199,9 @@ class Player:
 
         return match_stats
 
-
-
+    def get_opponent(self) -> str:
+        opponent = [team["name"] for team in self.match_info["match_details"]["header"]["teams"] if team["name"] != self.team_name][0]
+        return opponent
 
 class FotMob(MobFot):
     def __init__(self, **kwargs):
