@@ -177,9 +177,13 @@ class Player:
                     break
 
     def get_end_of_match_stats(self) -> Tuple[int, float, int, int]:
+        '''
+        This function retrieves the end of match statistics for a player.
+        
+        returns:
+            Tuple[int, float, int, int]: A tuple containing the player's rating, minutes played, goals scored, and assists provided.
+        '''
         player_info = self.match_info['player_info']
-        # TODO: add catch cases for this, if the player doesnt come off
-        # the bench then this will index out of range. 
         try:
             player_stats = player_info['stats'][0]['stats']
         except IndexError:
@@ -201,12 +205,35 @@ class Player:
             assists = player_stats['Assists']['stat']['value']
             match_stats = (rating, minutes_played, goals, assists)
 
-
         return match_stats
 
     def get_opponent(self) -> str:
+        '''
+        Return the name of the opponent in the upcoming match.
+        returns:
+            opponent (str): opponent name
+        '''
         opponent = [team["name"] for team in self.match_info["match_details"]["header"]["teams"] if team["name"] != self.team_name][0]
         return opponent
+
+    def is_match_soon(self, match_details) -> bool:
+        '''
+        Evaluate whether the upcoming match is within 1 hour.
+
+        returns:
+            bool: if the match is within 1 hour or not
+        '''
+        if not match_details:
+            if not self.match_info:
+                raise ValueError("No match available")
+            match_details = self.match_info["match_details"]
+        match_date = datetime.fromisoformat(match_details["general"]["matchTimeUTCDate"])
+        time_difference = match_date - datetime.now(timezone.utc)
+
+        if time_difference < timedelta(hours=1):
+            return True
+        else:
+            return False
 
 class FotMob(MobFot):
     def __init__(self, **kwargs):
@@ -243,10 +270,7 @@ class FotMob(MobFot):
             match_id = self.get_next_match_id(player)
         match_details = self.get_match_details(match_id)
 
-        match_date = datetime.fromisoformat(match_details["general"]["matchTimeUTCDate"])
-        time_difference = match_date - datetime.now(timezone.utc)
-
-        if time_difference < timedelta(hours=1):
+        if player.is_match_soon(match_details):
             player_information = None
             started = match_details["general"]["started"]
             finished = match_details["general"]["finished"]
@@ -276,8 +300,7 @@ class FotMob(MobFot):
                     "match_details" : match_details,
                     "match_id" : match_id,
                     "started" : started,
-                    "finished" : finished,
-                    "match_date" : match_date}
+                    "finished" : finished}
         else:
             return "No lineup available yet"
 
