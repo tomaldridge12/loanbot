@@ -19,23 +19,23 @@ def hourly_update_players(players: List[Player]) -> None:
                 player.match_info = fm.get_player_details_from_match(player, match_id)
             except Exception as e:
                 traceback.print_exc()
-                logging.debug(traceback.format_exc())
+                logging.info(traceback.format_exc())
                 continue
-        sleep(30)
+        sleep(60)
 
 def minutely_update_events(players: List[Player]) -> None:
     # repeat this every couple of minutes
     while not stop_event.is_set():
         
         for player in players:
-            logging.debug(f"Player: {player.name}")
+            logging.info(f"Player: {player.name}")
             if isinstance(player.match_info, dict): # otherwise error message from get_player_details_from_match
                 # Get most up to date match details
                 try:
                     player.match_info = fm.get_player_details_from_match(player, player.match_info["match_id"])
                 except Exception as e:
                     traceback.print_exc()
-                    logging.debug(traceback.format_exc())
+                    logging.info(traceback.format_exc())
                     continue
 
                 # tweet starting lineup or bench lineup
@@ -66,7 +66,7 @@ def minutely_update_events(players: List[Player]) -> None:
 if __name__ == "__main__":
     fm = FotMob()
     tc = TweepyClient()#
-    logging.basicConfig(filename="log.log")
+    logging.basicConfig(filename="log.log", level=logging.INFO)
 
     with open('ids.json', 'r') as f:
         player_data = json.load(f)

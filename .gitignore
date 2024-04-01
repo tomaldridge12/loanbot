@@ -10,3 +10,4 @@ __pycache__/
 sample-player.json
 sample-match.json
 sample-keeper.json
+*.log

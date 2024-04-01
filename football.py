@@ -83,49 +83,49 @@ class Player:
             if isinstance(event, tuple):
                 event, value = event
                 print(value)
-            print(event)
+            print(self.name, event)
             score_dict, score_string = fotmob_client.get_match_score(self.match_info["match_id"])
             match event:
                 case GameEvent.GOAL:
-                    logging.debug(f"{self.name}: GameEvent.GOAL")
+                    logging.info(f"{self.name}: GameEvent.GOAL")
                     goal_message = f"{self.name} has scored a goal!\n\n{score_string}\n#CFC #Chelsea"
                     image = generate_image(self, "goal", score_dict)
                     tweet_client.tweet_with_image(goal_message, image)
                     break
                 
                 case GameEvent.ASSIST:
-                    logging.debug(f"{self.name}: GameEvent.ASSIST")
+                    logging.info(f"{self.name}: GameEvent.ASSIST")
                     assist_message = f"{self.name} has assisted!\n\n{score_string}\n#CFC #Chelsea"
                     image = generate_image(self, "assist", score_dict)
                     tweet_client.tweet(assist_message)
                     break
                 
                 case GameEvent.YELLOW_CARD:
-                    logging.debug(f"{self.name}: GameEvent.YELLOW_CARD")
+                    logging.info(f"{self.name}: GameEvent.YELLOW_CARD")
                     yellow_card_message = f"{self.name} has received a yellow card!\n\n{score_string}\n#CFC #Chelsea"
                     tweet_client.tweet(yellow_card_message)
                     break
                 
                 case GameEvent.RED_CARD:
-                    logging.debug(f"{self.name}: GameEvent.RED_CARD")
+                    logging.info(f"{self.name}: GameEvent.RED_CARD")
                     red_card_message = f"{self.name} has received a red card! He's been sent off!\n\n{score_string}\n#CFC #Chelsea"
                     tweet_client.tweet(red_card_message)
                     break
                 
                 case GameEvent.SUB_ON:
-                    logging.debug(f"{self.name}: GameEvent.SUB_ON")
+                    logging.info(f"{self.name}: GameEvent.SUB_ON")
                     sub_on_message = f"{self.name} has been subbed on at the {value} minute!\n\n{score_string}\n#CFC #Chelsea"
                     tweet_client.tweet(sub_on_message)
                     break
                 
                 case GameEvent.SUB_OFF:
-                    logging.debug(f"{self.name}: GameEvent.SUB_OFF")
+                    logging.info(f"{self.name}: GameEvent.SUB_OFF")
                     sub_off_message = f"{self.name} has been subbed off at the {value} minute!\n\n{score_string}\n#CFC #Chelsea"
                     tweet_client.tweet(sub_off_message)
                     break
                 
                 case GameEvent.STARTED:
-                    logging.debug(f"{self.name}: GameEvent.STARTED")
+                    logging.info(f"{self.name}: GameEvent.STARTED")
                     if self.starting:
                         started_message = f"The {self.team_name} match with {self.name} has started!\n\n{score_string}\n#CFC #Chelsea"
                     else:
@@ -134,17 +134,17 @@ class Player:
                     break
                 
                 case GameEvent.FINISHED:
-                    logging.debug(f"{self.name}: GameEvent.FINISHED")
+                    logging.info(f"{self.name}: GameEvent.FINISHED")
                     resp = self.get_end_of_match_stats()
                     if isinstance(resp, tuple):
-                        minutes_played, rating, goals, assists = resp
+                        rating, minutes_played, goals, assists = resp
                         played = True
                     else:
                         played = False
                     
                     if played:
                         if self.match_info["player_info"]["position"] == "Keeper":
-                            minutes_played, rating, saves, conceded = resp
+                            rating, minutes_played, saves, conceded = resp
                             finished_message = f"""The {self.team_name} match with {self.name} has finished, he played {minutes_played} minutes, making {saves} save(s) and conceding {conceded} goals. He had a rating of {rating}.\n\n{score_string}\n#CFC #Chelsea"""
                         else:
                             minutes_played, rating, goals, assists = resp
@@ -163,14 +163,14 @@ class Player:
                     break
                 
                 case GameEvent.STARTING_LINEUP:
-                    logging.debug(f"{self.name}: GameEvent.STARTING_LINEUP")
+                    logging.info(f"{self.name}: GameEvent.STARTING_LINEUP")
                     opponent = self.get_opponent()
                     starting_message = f"{self.name} is in the starting lineup at {self.match_info["player_info"]["positionStringShort"]} for {self.team_name} against {opponent} in the {self.match_info["match_details"]["general"]["parentLeagueName"]}!\n\n#CFC #Chelsea"
                     tweet_client.tweet(starting_message)
                     break
                 
                 case GameEvent.BENCH_LINEUP:
-                    logging.debug(f"{self.name}: GameEvent.BENCH_LINEUP")
+                    logging.info(f"{self.name}: GameEvent.BENCH_LINEUP")
                     opponent = self.get_opponent()
                     bench_message = f"{self.name} is on the bench for {self.team_name} against {opponent} in the {self.match_info["match_details"]["general"]["parentLeagueName"]}!\n\n#CFC #Chelsea"
                     tweet_client.tweet(bench_message)
@@ -184,9 +184,14 @@ class Player:
             player_stats = player_info['stats'][0]['stats']
         except IndexError:
             return "Did not play"
+        print(player_stats)
 
         rating = player_stats['FotMob rating']['stat']['value']
-        minutes_played = player_stats['Minutes played']['stat']['value']
+        try:
+            minutes_played = player_stats['Minutes played']['stat']['value']
+        except KeyError:
+            minutes_played = 'Unknown'
+            logging.info(f"Failed to get minuted played for {self.name}")
         if self.match_info["player_info"]["position"] == "Keeper":
             saves = player_stats['Saves']['stat']['value']
             conceded = player_stats['Goals conceded']['stat']['value']
