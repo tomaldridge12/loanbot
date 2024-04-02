@@ -4,6 +4,7 @@ import threading
 import traceback
 
 from collections import deque
+from datetime import datetime
 from time import sleep
 from typing import List
 
@@ -78,13 +79,16 @@ if __name__ == "__main__":
     tc = TweepyClient()
     in_match_players = ThreadSafeQueue()
     logging.basicConfig(filename="log.log", level=logging.INFO)
+    logging.info(f"Starting loanbot at {datetime.now()}")
 
     with open('ids.json', 'r') as f:
         player_data = json.load(f)
     
+    logging.info("Loading players list...")
     players = [Player(name, data['id'], data['team_id'], data['team_name'])
                 for name, data in player_data.items()]
     
+    logging.info("Starting threads...")
     hourly_update = threading.Thread(target=hourly_update_players, args=(players,in_match_players,))
     events_update = threading.Thread(target=minutely_update_events, args=(in_match_players,))
 
@@ -101,6 +105,7 @@ if __name__ == "__main__":
         while True:
             sleep(1)
     except KeyboardInterrupt:
+        logging.info("Exiting...")
         print("Exiting...")
         stop_event.set()
         hourly_update.join()
