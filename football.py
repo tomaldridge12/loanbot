@@ -20,6 +20,7 @@ class Player:
         self.in_match = False
         self.starting = False
         self.tweeted_lineup = False
+        self.in_queue = False
 
     def __repr__(self):
         return f'{self.name}, {self.team_name}'
@@ -55,6 +56,7 @@ class Player:
                         print(f"Unknown key {key} with value {value}")
             else:
                 print(f"Unknown key {key} with value {value}")
+            logging.info(f"Event {k} with value {v}")
         
         if self.match_info:
             # Get current events and check for new/updated events

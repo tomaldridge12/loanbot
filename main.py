@@ -23,10 +23,12 @@ def hourly_update_players(players: List[Player], in_match_players: deque[Player]
                 traceback.print_exc()
                 logging.info(traceback.format_exc())
                 continue
-            if isinstance(player.match_info, dict):
-                if player.is_match_soon(player.match_info["match_details"]):
-                    in_match_players.put(player)
-                    logging.info(f"Adding {player.name} to queue")
+            if isinstance(player.match_info, dict): # i.e. player is in lineup
+                if not player.in_queue:
+                    if player.is_match_soon(player.match_info["match_details"]):
+                        in_match_players.put(player)
+                        player.in_queue = True
+                        logging.info(f"Adding {player.name} to queue")
 
         sleep(600)
 
@@ -67,6 +69,8 @@ def minutely_update_events(in_match_players: deque[Player]) -> None:
                         player.in_match = False
                         try:
                             in_match_players.remove(player)
+                            player.in_queue = False
+                            logging.info(f"Removing {player.name} from queue")
                         except ValueError:
                             print(f"Attempted to remove {player.name} from queue, but couldn't find it.")
 
