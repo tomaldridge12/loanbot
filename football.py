@@ -194,8 +194,29 @@ class Player:
         try:
             minutes_played = player_stats['Minutes played']['stat']['value']
         except KeyError:
-            minutes_played = 'Unknown'
-            logging.info(f"Failed to get minuted played for {self.name}")
+            try:
+                minutes_played = player_info["minutesPlayed"]
+                logging.info("Falling back to backup minutes played")
+            except KeyError:
+                try:
+                    sub_on_time = player_info["timeSubbedOn"]
+                    if sub_on_time != "None":
+                        sub_on_time = float(sub_on_time)
+                    else:
+                        sub_on_time = 0
+                    
+                    sub_off_time = player_info["timeSubbedOff"]
+                    if sub_off_time != "None":
+                        sub_off_time = float(sub_off_time)
+                    else:
+                        sub_off_time = 0
+                    
+                    minutes_played = 90 - sub_off_time - sub_on_time
+                    logging.info("Falling back to second backup minutes played")
+                except KeyError:
+                    minutes_played = 'unknown'
+                    logging.info(f"Failed to get minuted played for {self.name}")
+                                                                            
         if self.match_info["player_info"]["position"] == "Keeper":
             saves = player_stats['Saves']['stat']['value']
             conceded = player_stats['Goals conceded']['stat']['value']
