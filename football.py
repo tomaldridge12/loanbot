@@ -151,13 +151,13 @@ class Player:
                         else:
                             rating, minutes_played, goals, assists = resp
                             if goals > 0 and assists > 0:
-                                finished_message = f"""The {self.team_name} match with {self.name} has finished, he played {minutes_played} minutes, scoring {goals} goal(s) and assisting {assists} time(s)! FotMob rated him {rating}.\n\n{score_string}\n#CFC #Chelsea"""
+                                finished_message = f"""The {self.team_name} match with {self.name} has finished, he scored {goals} goal(s) and assisted {assists} time(s)! FotMob rated him {rating}.\n\n{score_string}\n#CFC #Chelsea"""
                             elif goals > 0:
-                                finished_message = f"""The {self.team_name} match with {self.name} has finished, he played {minutes_played} minutes, scoring {goals} goal(s)! FotMob rated him {rating}.\n\n{score_string}\n#CFC #Chelsea"""
+                                finished_message = f"""The {self.team_name} match with {self.name} has finished, he scored {goals} goal(s)! FotMob rated him {rating}.\n\n{score_string}\n#CFC #Chelsea"""
                             elif assists > 0:
-                                finished_message = f"""The {self.team_name} match with {self.name} has finished, he played {minutes_played} minutes, assisting {assists} time(s)! FotMob rated him {rating}.\n\n{score_string}\n#CFC #Chelsea"""
+                                finished_message = f"""The {self.team_name} match with {self.name} has finished, he assisted {assists} time(s)! FotMob rated him {rating}.\n\n{score_string}\n#CFC #Chelsea"""
                             else:
-                                finished_message = f"""The {self.team_name} match with {self.name} has finished, he played {minutes_played} minutes and had a rating of {rating}!\n\n{score_string}\n#CFC #Chelsea"""
+                                finished_message = f"""The {self.team_name} match with {self.name} has finished, he had a rating of {rating}!\n\n{score_string}\n#CFC #Chelsea"""
                     else:
                         finished_message = f"""The {self.team_name} match with {self.name} has finished. He didn't come off the bench.\n\n#CFC #Chelsea"""
                     
@@ -193,31 +193,33 @@ class Player:
         print(player_stats)
 
         rating = player_stats['FotMob rating']['stat']['value']
-        try:
-            minutes_played = player_stats['Minutes played']['stat']['value']
-        except KeyError:
-            try:
-                minutes_played = player_info["minutesPlayed"]
-                logging.info("Falling back to backup minutes played")
-            except KeyError:
-                try:
-                    sub_on_time = player_info["timeSubbedOn"]
-                    if sub_on_time != "None":
-                        sub_on_time = float(sub_on_time)
-                    else:
-                        sub_on_time = 0
+        # TODO: fix minutes played. this still crashes the app
+        minutes_played = None
+        # try:
+        #     minutes_played = player_stats['Minutes played']['stat']['value']
+        # except KeyError:
+        #     try:
+        #         minutes_played = player_info["minutesPlayed"]
+        #         logging.info("Falling back to backup minutes played")
+        #     except KeyError:
+        #         try:
+        #             sub_on_time = player_info["timeSubbedOn"]
+        #             if sub_on_time != "None":
+        #                 sub_on_time = float(sub_on_time)
+        #             else:
+        #                 sub_on_time = 0
                     
-                    sub_off_time = player_info["timeSubbedOff"]
-                    if sub_off_time != "None":
-                        sub_off_time = float(sub_off_time)
-                    else:
-                        sub_off_time = 0
+        #             sub_off_time = player_info["timeSubbedOff"]
+        #             if sub_off_time != "None":
+        #                 sub_off_time = float(sub_off_time)
+        #             else:
+        #                 sub_off_time = 0
                     
-                    minutes_played = 90 - sub_off_time - sub_on_time
-                    logging.info("Falling back to second backup minutes played")
-                except KeyError:
-                    minutes_played = 'unknown'
-                    logging.info(f"Failed to get minuted played for {self.name}")
+        #             minutes_played = 90 - sub_off_time - sub_on_time
+        #             logging.info("Falling back to second backup minutes played")
+        #         except KeyError:
+        #             minutes_played = 'unknown'
+        #             logging.info(f"Failed to get minuted played for {self.name}")
                                                                             
         if self.match_info["player_info"]["position"] == "Keeper":
             saves = player_stats['Saves']['stat']['value']

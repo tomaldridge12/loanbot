@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import threading
 import traceback
 
@@ -15,6 +16,7 @@ from utils import GameEvent, ThreadSafeQueue, TweepyClient
 def hourly_update_players(players: List[Player], in_match_players: deque[Player]) -> None:
     # repeat this every hour
     while not stop_event.is_set():
+        logging.info("Beginning hourly player check")
         for player in players:
             match_id = fm.get_next_match_id(player)
             try:
@@ -29,6 +31,7 @@ def hourly_update_players(players: List[Player], in_match_players: deque[Player]
                         in_match_players.put(player)
                         player.in_queue = True
                         logging.info(f"Adding {player.name} to queue")
+        logging.info("Ending hourly player check")
 
         sleep(600)
 
@@ -37,7 +40,7 @@ def minutely_update_events(in_match_players: deque[Player]) -> None:
     while not stop_event.is_set():
 
         for player in in_match_players:
-            logging.info(f"Player: {player.name}")
+            logging.info(f"Polling {player.name} at {datetime.now()}")
             if isinstance(player.match_info, dict): # otherwise error message from get_player_details_from_match
                 # Get most up to date match details
                 try:
@@ -82,7 +85,11 @@ if __name__ == "__main__":
     fm = FotMob()
     tc = TweepyClient()
     in_match_players = ThreadSafeQueue()
-    logging.basicConfig(filename="log.log", level=logging.INFO)
+
+    if not os.path.isdir("logs"):
+        os.makedirs("logs")
+    logfile_name = f"logs/{datetime.now().strftime("%d-%m-%Y-%H-%M-%S")}.log"
+    logging.basicConfig(filename=logfile_name, level=logging.INFO)
     logging.info(f"Starting loanbot at {datetime.now()}")
 
     with open('ids.json', 'r') as f:
