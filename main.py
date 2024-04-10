@@ -4,7 +4,6 @@ import os
 import threading
 import traceback
 
-from collections import deque
 from datetime import datetime
 from time import sleep
 from typing import List
@@ -13,7 +12,7 @@ from football import FotMob, Player
 from utils import GameEvent, ThreadSafeQueue, TweepyClient
 
    
-def hourly_update_players(players: List[Player], in_match_players: deque[Player]) -> None:
+def hourly_update_players(players: List[Player], in_match_players: ThreadSafeQueue[Player]) -> None:
     # repeat this every hour
     while not stop_event.is_set():
         logging.info(f"Beginning hourly player check at {datetime.now()}")
@@ -30,7 +29,6 @@ def hourly_update_players(players: List[Player], in_match_players: deque[Player]
             if isinstance(player.match_info, dict): # i.e. player is in lineup
                 if not player.in_queue:
                     if player.is_match_soon(player.match_info["match_details"]):
-                        # TODO: why am I using a queue system here instead of a set?
                         in_match_players.put(player)
                         player.in_queue = True
                         logging.info(f"Adding {player.name} to queue")
@@ -38,11 +36,11 @@ def hourly_update_players(players: List[Player], in_match_players: deque[Player]
         logging.info(f"Ending hourly player check at {datetime.now()}")
         sleep(600)
 
-def minutely_update_events(in_match_players: deque[Player]) -> None:
+def minutely_update_events(in_match_players: ThreadSafeQueue[Player]) -> None:
     # repeat this every couple of minutes
     while not stop_event.is_set():
 
-        # Iterate through all players in the in_match_players queue. Why not use a set here?
+        # Iterate through all players in the in_match_players queue
         for player in in_match_players:
             logging.info(f"Polling {player.name} at {datetime.now()}")
             if isinstance(player.match_info, dict): # otherwise error message from get_player_details_from_match
