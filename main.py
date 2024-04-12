@@ -61,23 +61,21 @@ def minutely_update_events(in_match_players: ThreadSafeQueue) -> None:
                     player.tweeted_lineup = True
                 
                 # tweet kickoff tweet, but check if kickoff tweet already tweeted
-                if player.match_info["started"]:
-                    if not player.in_match:
-                        player.events_queue.put(GameEvent.STARTED)
-                        player.in_match = True
+                if player.match_info["started"] and not player.in_match:
+                    player.events_queue.put(GameEvent.STARTED)
+                    player.in_match = True
                 
                 # tweet match end tweet, i.e. player performance etc
                 # clear player.match_info
-                if player.match_info["finished"]:
-                    if player.in_match:
-                        player.events_queue.put(GameEvent.FINISHED)
-                        player.in_match = False
-                        try:
-                            in_match_players.remove(player)
-                            player.in_queue = False
-                            logging.info(f"Removing {player.name} from queue")
-                        except ValueError:
-                            print(f"Attempted to remove {player.name} from queue, but couldn't find it.")
+                if player.match_info["finished"] and player.in_match:
+                    player.events_queue.put(GameEvent.FINISHED)
+                    player.in_match = False
+                    try:
+                        in_match_players.remove(player)
+                        player.in_queue = False
+                        logging.info(f"Removing {player.name} from queue")
+                    except ValueError:
+                        print(f"Attempted to remove {player.name} from queue, but couldn't find it.")
 
                 # get player event details
                 player.handle_events(tc, fm)

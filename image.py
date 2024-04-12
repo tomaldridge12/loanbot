@@ -45,6 +45,7 @@ def get_image_from_url(image_url: str) -> Image:
 def generate_image(player, type: str, score_dict: dict) -> Image:
     badge_path = f"https://images.fotmob.com/image_resources/logo/teamlogo/{player.team_id}.png"
     player_path = f"https://images.fotmob.com/image_resources/playerimages/{player.id}.png"
+    font_path = "font.otf"
 
     badge = get_image_from_url(badge_path)
     player = get_image_from_url(player_path)
@@ -58,13 +59,13 @@ def generate_image(player, type: str, score_dict: dict) -> Image:
     if type == "goal":
         text = "GOAL"
         with_text = overlay_text(with_images, text, position=(260, 0),
-                                    font_size=200, font_path="font.otf")
+                                    font_size=200, font_path=font_path)
     elif type == "assist":
         text = "ASSIST"
         with_text = overlay_text(with_images, text, position=(220, 0),
-                                    font_size=200, font_path="font.otf")
+                                    font_size=200, font_path=font_path)
 
     final_image = overlay_text(with_text, score_string, position=(300, 160),
-                                    font_size=200, font_path="font.otf")
+                                    font_size=200, font_path=font_path)
 
     return final_image

@@ -99,7 +99,7 @@ class Player:
                     logging.info(f"{self.name}: GameEvent.ASSIST")
                     assist_message = f"{self.name} has assisted!\n\n{score_string}\n#CFC #Chelsea"
                     image = generate_image(self, "assist", score_dict)
-                    tweet_client.tweet(assist_message)
+                    tweet_client.tweet_with_image(assist_message, image)
                     break
                 
                 case GameEvent.YELLOW_CARD:
@@ -178,7 +178,7 @@ class Player:
                     tweet_client.tweet(bench_message)
                     break
 
-    def get_end_of_match_stats(self) -> Tuple[int, float, int, int]:
+    def get_end_of_match_stats(self) -> Union[str, Tuple[int, float, int, int]]:
         '''
         This function retrieves the end of match statistics for a player.
         
@@ -241,7 +241,7 @@ class Player:
         opponent = [team["name"] for team in self.match_info["match_details"]["header"]["teams"] if team["name"] != self.team_name][0]
         return opponent
 
-    def is_match_soon(self, match_details) -> bool:
+    def is_match_soon(self, match_details: dict) -> bool:
         '''
         Evaluate whether the upcoming match is within 1 hour.
 
@@ -329,7 +329,7 @@ class FotMob(MobFot):
         else:
             return "No lineup available yet"
 
-    def get_match_score(self, match_id: int) -> dict:
+    def get_match_score(self, match_id: int) -> Tuple[dict, str]:
         match_details = self.get_match_details(match_id)
         teams = match_details["header"]["teams"]
         home_team = teams[0]
