@@ -11,3 +11,4 @@ sample-player.json
 sample-match.json
 sample-keeper.json
 *.log
+.DS_Store

@@ -12,7 +12,7 @@ from football import FotMob, Player
 from utils import GameEvent, ThreadSafeQueue, TweepyClient
 
    
-def hourly_update_players(players: List[Player], in_match_players: ThreadSafeQueue[Player]) -> None:
+def hourly_update_players(players: List[Player], in_match_players: ThreadSafeQueue) -> None:
     # repeat this every hour
     while not stop_event.is_set():
         logging.info(f"Beginning hourly player check at {datetime.now()}")
@@ -36,7 +36,7 @@ def hourly_update_players(players: List[Player], in_match_players: ThreadSafeQue
         logging.info(f"Ending hourly player check at {datetime.now()}")
         sleep(600)
 
-def minutely_update_events(in_match_players: ThreadSafeQueue[Player]) -> None:
+def minutely_update_events(in_match_players: ThreadSafeQueue) -> None:
     # repeat this every couple of minutes
     while not stop_event.is_set():
 
