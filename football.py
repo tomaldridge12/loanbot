@@ -147,7 +147,7 @@ class Player:
                     if played:
                         if self.match_info["player_info"]["position"] == "Keeper":
                             rating, minutes_played, saves, conceded = resp
-                            finished_message = f"""The {self.team_name} match with {self.name} has finished, he played {minutes_played} minutes, making {saves} save(s) and conceding {conceded} goals. He had a rating of {rating}.\n\n{score_string}\n#CFC #Chelsea"""
+                            finished_message = f"""The {self.team_name} match with {self.name} has finished, he made {saves} save(s) and conceded {conceded} goals. He had a rating of {rating}.\n\n{score_string}\n#CFC #Chelsea"""
                         else:
                             rating, minutes_played, goals, assists = resp
                             if goals > 0 and assists > 0:
