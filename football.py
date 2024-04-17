@@ -299,12 +299,20 @@ class FotMob(MobFot):
             player_information = None
             started = match_details["general"]["started"]
             finished = match_details["general"]["finished"]
-            lineup = match_details["content"]["lineup"]["lineup"]
+            try:
+                lineup = match_details["content"]["lineup"]["lineup"]
+            except TypeError:
+                # In this case, the lineup info isn't available yet. This means
+                # that indexing into match_details will error, so we must handle this
+                return 'Lineup not available yet'
 
             for team in lineup:
                 if team["teamId"] == player.team_id:
                     team_lineup = team
                     break
+            
+            if not team_lineup:
+                return 'Lineup not available yet'
 
             for position in team_lineup["players"]:
                 for _player in position:
