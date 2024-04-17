@@ -38,6 +38,7 @@ def hourly_update_players(players: List[Player], in_match_players: ThreadSafeQue
             sleep(600)
         except KeyboardInterrupt:
             break
+        
 
 def minutely_update_events(in_match_players: ThreadSafeQueue, stop_event) -> None:
     # repeat this every couple of minutes
