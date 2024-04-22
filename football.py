@@ -97,7 +97,7 @@ class Player:
                 
                 case GameEvent.ASSIST:
                     logging.info(f"{self.name}: GameEvent.ASSIST")
-                    assist_message = f"{self.name} has assisted!\n\n{score_string}\n#CFC #Chelsea"
+                    assist_message = f"{self.name} has provided an assist!\n\n{score_string}\n#CFC #Chelsea"
                     image = generate_image(self, "assist", score_dict)
                     tweet_client.tweet_with_image(assist_message, image)
                     break

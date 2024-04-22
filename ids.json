@@ -83,7 +83,17 @@
         "id" : 1180500,
         "team_id" : 10104,
         "team_name" : "Bristol Rovers"
-    }
+    },
+    "Tino Anjorin" : {
+        "id" : 983199,
+        "team_id" : 8462,
+        "team_name" : "Portsmouth"
+    },
+    "Dion Rankine" : {
+        "id" : 1113759,
+        "team_id" : 9833,
+        "team_name" : "Exeter City"
+    },
 
 }
 
