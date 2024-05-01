@@ -20,6 +20,9 @@ def hourly_update_players(players: List[Player], in_match_players: ThreadSafeQue
             # Iterate through all players in the player list
             for player in players:
                 match_id = fm.get_next_match_id(player)
+                if not match_id:
+                    logging.info(f"Could not get next match for {player.name}, skipping...")
+                    continue
                 try:
                     player.match_info = fm.get_player_details_from_match(player, match_id)
                 except Exception as e:

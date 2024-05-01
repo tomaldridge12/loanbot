@@ -278,8 +278,11 @@ class FotMob(MobFot):
             int: the match ID 
         '''
         team_details = self.get_team(player.team_id, tab="fixtures")
-        next_match_id = team_details["fixtures"]["allFixtures"]["nextMatch"]["id"]
-        return next_match_id
+        try:
+            next_match_id = team_details["fixtures"]["allFixtures"]["nextMatch"]["id"]
+            return next_match_id
+        except TypeError:
+            return None
     
     def get_player_details_from_match(self, player: Player, match_id: Optional[int]) -> Union[str, dict]:
         '''
