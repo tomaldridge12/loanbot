@@ -24,3 +24,8 @@ Edit the `ids.json` file, and provide each player in the format:
 ```
 where PLAYER_ID and TEAM_ID can be extracted from the player/team URL on FotMob. Twitter/X API keys will also be required to tweet updates, and these should be stored in a `.env` file within the source directory. Finally, run `python main.py` in order to start the bot.
 
+### Docker
+The application can also be ran as a Docker image:
+```
+docker-compose up --build -d
+```
