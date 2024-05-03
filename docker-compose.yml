@@ -1,0 +1,20 @@
+version: '3'
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    volumes:
+      - ./logs:/app/logs
+    environment:
+      - RESTART_INTERVAL=86400  # 24 hours in seconds
+    command: |
+      sh -c "
+        trap 'kill $$child_pid' TERM
+        python main.py &
+        child_pid=$$!
+        while true; do
+          sleep $$RESTART_INTERVAL
+          kill -TERM $$child_pid || true
+          python main.py &
+          child_pid=$$!
+        done"
