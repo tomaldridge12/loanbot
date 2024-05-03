@@ -22,7 +22,8 @@ class GameEvent(Enum):
 
 class TweepyClient:
     def __init__(self):
-        config = dotenv_values(".env")
+        config = dotenv_values("../.env")
+        print(config)
 
         auth = tweepy.OAuth1UserHandler(config["API_KEY"], config["API_KEY_SECRET"])
         auth.set_access_token(key=config["ACCESS_TOKEN"], secret=config["ACCESS_TOKEN_SECRET"])

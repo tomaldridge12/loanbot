@@ -96,19 +96,21 @@ def signal_handler(sig, frame):
 
 if __name__ == "__main__":
     # Instantiate clients
+    LOGS_DIR = "../logs"
+    IDS_PATH = "../ids.json"
     fm = FotMob()
     tc = TweepyClient()
     in_match_players = ThreadSafeQueue()
 
     # Set up logging
-    if not os.path.isdir("logs"):
-        os.makedirs("logs")
-    logfile_name = f"logs/{datetime.now().strftime("%d-%m-%Y-%H-%M-%S")}.log"
+    if not os.path.isdir(LOGS_DIR):
+        os.makedirs(LOGS_DIR)
+    logfile_name = f"{LOGS_DIR}/{datetime.now().strftime("%d-%m-%Y-%H-%M-%S")}.log"
     logging.basicConfig(filename=logfile_name, level=logging.INFO)
     logging.info(f"Starting loanbot at {datetime.now()}")
 
     # Load player list into Player array
-    with open('ids.json', 'r') as f:
+    with open(IDS_PATH, 'r') as f:
         player_data = json.load(f)
     
     logging.info("Loading players list...")
