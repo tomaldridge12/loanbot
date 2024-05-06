@@ -310,14 +310,23 @@ class FotMob(MobFot):
                 return 'Lineup not available yet'
 
             for team in lineup:
-                if team["teamId"] == player.team_id:
+                try:
+                    team_id = team["teamId"]
+                except KeyError:
+                    return 'Lineup not available yet'
+                if team_id == player.team_id:
                     team_lineup = team
                     break
             
             if not team_lineup:
                 return 'Lineup not available yet'
-
-            for position in team_lineup["players"]:
+            
+            try:
+                players = team_lineup["players"]
+            except KeyError:
+                return 'Lineup not available yet'
+            
+            for position in players:
                 for _player in position:
                     if _player["id"] == str(player.id):
                         player_information = _player
