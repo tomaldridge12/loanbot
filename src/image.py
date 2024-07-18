@@ -45,12 +45,13 @@ def get_image_from_url(image_url: str) -> Image:
 def generate_image(player, type: str, score_dict: dict) -> Image:
     badge_path = f"https://images.fotmob.com/image_resources/logo/teamlogo/{player.team_id}.png"
     player_path = f"https://images.fotmob.com/image_resources/playerimages/{player.id}.png"
+    background_path = "../background.jpg"
     font_path = "../font.otf"
 
     badge = get_image_from_url(badge_path)
     player = get_image_from_url(player_path)
 
-    blue_background = Image.new('RGBA', (640, 360), color=(3, 70, 148))
+    blue_background = Image.open(background_path, formats=["jpeg"]).resize((640, 360)).convert("RGBA")
     with_images = overlay_image(blue_background, player, badge)
 
     score_list = list(score_dict.values())
