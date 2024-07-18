@@ -45,7 +45,7 @@ def get_image_from_url(image_url: str) -> Image:
 def generate_image(player, type: str, score_dict: dict) -> Image:
     badge_path = f"https://images.fotmob.com/image_resources/logo/teamlogo/{player.team_id}.png"
     player_path = f"https://images.fotmob.com/image_resources/playerimages/{player.id}.png"
-    font_path = "font.otf"
+    font_path = "../font.otf"
 
     badge = get_image_from_url(badge_path)
     player = get_image_from_url(player_path)
