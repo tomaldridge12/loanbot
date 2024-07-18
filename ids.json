@@ -1,98 +1,29 @@
 {
-    "Ian Maatsen" : {
-        "id" : 966026,
-        "team_id" : 9789,
-        "team_name" : "Borussia Dortmund"
+    "Estevao Willian" : {
+        "id" : 1580774,
+        "team_id" : 10283,
+        "team_name" : "Palmeiras"
     },
-    "Lewis Hall" : {
-        "id" : 1197655,
-        "team_id" : 10261,
-        "team_name" : "Newcastle United"
+    "Kendry Paez" : {
+        "id" : 1443464,
+        "team_id" : 192875,
+        "team_name" : "Independiente de Valle" 
     },
-    "Lucas Bergstrom" : {
-        "id" : 1096396,
-        "team_id" : 8501,
-        "team_name" : "Brommapojkarna United"
-    },
-    "Armando Broja" : {
-        "id" : 1077975,
-        "team_id" : 9879,
-        "team_name" : "Fulham"
-    },
-    "Andrey Santos" : {
-        "id" : 1372921,
-        "team_id" : 9848,
-        "team_name" : "Strasbourg"
-    },
-    "Angelo Gabriel" : {
-        "id" : 1199757,
-        "team_id" : 9848,
-        "team_name" : "Strasbourg"
-    },
-    "David Datro Fofana" : {
-        "id" : 1207581,
-        "team_id" : 8191,
-        "team_name" : "Burnley"
+    "Dylan Williams" : {
+        "id" : 1211647,
+        "team_id" : 9792,
+        "team_name" : "Burton Albion" 
     },
     "Jamie Cumming" : {
         "id" : 801477,
         "team_id" : 8653,
-        "team_name" : "Oxford United"
+        "team_name" : "Oxford United" 
     },
-    "Eddie Beach" : {
-        "id" : 1421811,
-        "team_id" : 6189,
-        "team_name" : "Gateshead FC"
+    "Teddy Sharman-Lowe" : {
+        "id" : 1117871,
+        "team_id" : 9903,
+        "team_name" : "Doncaster Rovers" 
     },
-    "Alex Matos" : {
-        "id" : 1202031,
-        "team_id" : 9796,
-        "team_name" : "Huddersfield Town"
-    },
-    "Bashir Humphreys" : {
-        "id" : 1238058,
-        "team_id" : 10003,
-        "team_name" : "Swansea City"
-    },
-    "Mason Burstow" : {
-        "id" : 1293027,
-        "team_id" : 8472,
-        "team_name" : "Sunderland"
-    },
-    "Omari Hutchinson" : {
-        "id" : 1215652,
-        "team_id" : 9902,
-        "team_name" : "Ipswich Town"
-    },
-    "Charlie Webster" : {
-        "id" : 1197515,
-        "team_id" : 10228,
-        "team_name" : "SC Heerenveen"
-    },
-    "Hakim Ziyech" : {
-        "id" : 360559,
-        "team_id" : 8637,
-        "team_name" : "Galatasaray"
-    },
-    "Gabriel Slonina" : {
-        "id" : 1031220,
-        "team_id" : 6351,
-        "team_name" : "Eupen"
-    },
-    "Harvey Vale" : {
-        "id" : 1180500,
-        "team_id" : 10104,
-        "team_name" : "Bristol Rovers"
-    },
-    "Tino Anjorin" : {
-        "id" : 983199,
-        "team_id" : 8462,
-        "team_name" : "Portsmouth"
-    },
-    "Dion Rankine" : {
-        "id" : 1113759,
-        "team_id" : 9833,
-        "team_name" : "Exeter City"
-    }
 }
+
 
