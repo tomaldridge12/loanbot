@@ -24,6 +24,11 @@
         "team_id" : 9903,
         "team_name" : "Doncaster Rovers" 
     },
+	"Edu Garcia" : {
+        "id" : 671640,
+        "team_id" : 930027,
+        "team_name" : "Shenzhen Peng City" 
+    }
 }
 
 
