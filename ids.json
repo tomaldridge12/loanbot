@@ -14,20 +14,40 @@
         "team_id" : 9792,
         "team_name" : "Burton Albion" 
     },
-    "Jamie Cumming" : {
-        "id" : 801477,
-        "team_id" : 8653,
-        "team_name" : "Oxford United" 
-    },
     "Teddy Sharman-Lowe" : {
         "id" : 1117871,
         "team_id" : 9903,
         "team_name" : "Doncaster Rovers" 
     },
-	"Edu Garcia" : {
-        "id" : 671640,
-        "team_id" : 930027,
-        "team_name" : "Shenzhen Peng City" 
+	"Aaron Anselmino" : {
+        "id" : 1494947,
+        "team_id" : 10077,
+        "team_name" : "Boca Juniors" 
+    },
+	"Caleb Wiley" : {
+        "id" : 1170744,
+        "team_id" : 9848,
+        "team_name" : "Strasbourg" 
+    },
+	"Andrey Santos" : {
+        "id" : 1372921,
+        "team_id" : 9848,
+        "team_name" : "Strasbourg" 
+    },
+	"Mike Penders" : {
+        "id" : 1319972,
+        "team_id" : 9987,
+        "team_name" : "Genk" 
+    },
+	"Alfie Gilchrist" : {
+        "id" : 1226756,
+        "team_id" : 8657,
+        "team_name" : "Sheffield United" 
+    },
+	"Eddie Beach" : {
+        "id" : 1421811,
+        "team_id" : 8647,
+        "team_name" : "Crawley Town" 
     }
 }
 
