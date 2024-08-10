@@ -34,6 +34,7 @@ class Match:
         self.general = general
         self.lineup = lineup
         self.header = header
+        self.date = datetime.fromisoformat(general["matchTimeUTCDate"])
         self.started = started
         self.finished = finished
         self.tweeted = self.setup_tweet_dict()
@@ -69,8 +70,7 @@ class Match:
             return None
 
     def is_soon(self):
-        match_date = datetime.fromisoformat(self.general["matchTimeUTCDate"])
-        time_difference = match_date - datetime.now(timezone.utc)
+        time_difference = self.date - datetime.now(timezone.utc)
 
         if time_difference < timedelta(hours=1):
             return True
@@ -96,7 +96,7 @@ class Match:
 
     def __str__(self):
         status = "Finished" if self.finished else "In progress" if self.started else "Not started"
-        return f"Match {self.id} in {self.league_name} - Status: {status}"
+        return f"Match {self.id} in {self.league_name} at {self.date} - Status: {status}"
 
 class Player:
     def __init__(self,
