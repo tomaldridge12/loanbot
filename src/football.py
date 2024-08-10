@@ -71,6 +71,8 @@ class Match:
             )
         except KeyError as e:
             print(f'Error: missing required field - {str(e)}')
+            with open('broken.json', 'w') as f:
+                f.write(json_dict)
         except Exception as e:
             print(f'Error: unexpected error occured - {str(e)}')
 
