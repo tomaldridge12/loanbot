@@ -50,32 +50,23 @@ class Match:
         :return: Match object if successful, None otherwise
         """
         try:
-            general = json_dict["general"]
-            match_id = general["matchId"]
-            league_name = general["leagueName"]
-            started = general["started"]
-            finished = general["finished"]
-
-            content = json_dict["content"]
-            lineup = content["lineup"]
-
-            header = json_dict["header"]
-
+            general = json_dict.get("general", {})
+            content = json_dict.get("content", {})
+            if not (general or content):
+                return None
+            
             return cls(
-                id=match_id,
-                league_name=league_name,
+                id=general.get("matchId"),
+                league_name=general.get("leagueName"),
                 general=general,
-                header=header,
-                lineup=lineup,
-                started=started,
-                finished=finished
+                header=json_dict.get("header", {}),
+                lineup=content.get("lineup"),
+                started=general.get("started"),
+                finished=general.get("finished")
             )
-        except KeyError as e:
-            print(f'Error: missing required field - {str(e)}')
-            with open(f'broken-{randint(1, 5000)}.json', 'w') as f:
-                f.write(json_dict)
         except Exception as e:
-            print(f'Error: unexpected error occured - {str(e)}')
+            print(f"Error parsing JSON: {str(e)}")
+            return None
 
     def is_soon(self):
         match_date = datetime.fromisoformat(self.general["matchTimeUTCDate"])
@@ -143,6 +134,7 @@ class PlayerManager:
         team_details = self.fotmob.get_team(player.team_id, tab="fixtures")
         try:
             next_match_id = team_details["fixtures"]["allFixtures"]["nextMatch"]["id"]
+            print(next_match_id)
             match_details = self.fotmob.get_match_details(next_match_id)
             match = Match.from_json(match_details)
             player.next_match = match
@@ -165,7 +157,7 @@ class PlayerManager:
             return None
         
     def in_lineup(self, player: Player, match: Match):
-        lineup = match.lineup["lineup"]
+        lineup = match.lineup.get("lineup")
         if not isinstance(lineup, list):
             return False
         for team in lineup:
