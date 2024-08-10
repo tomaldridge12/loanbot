@@ -157,6 +157,8 @@ class PlayerManager:
             return None
         
     def in_lineup(self, player: Player, match: Match):
+        if not match.lineup:
+            return False
         lineup = match.lineup.get("lineup")
         if not isinstance(lineup, list):
             return False

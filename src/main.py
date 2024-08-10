@@ -18,7 +18,7 @@ def hourly_update_players(pm: PlayerManager, stop_event):
             for player in pm.players:
                 if player not in pm.player_queue:
                     player.next_match = pm.get_next_match(player)
-                    print(f"got player {player.name} with match {player.next_match}")
+                    logging.info(f"Got player {player.name} with match {player.next_match}")
                     if player.next_match and player.next_match.is_soon():
                         if pm.in_lineup(player, player.next_match):
                                 logging.info(f"Adding {player.name} to queue")
