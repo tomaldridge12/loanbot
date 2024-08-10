@@ -8,15 +8,15 @@ from time import sleep
 from football import PlayerManager
 from utils import GameEvent
 
-HOUR_DELAY = 600 # actually 10 minutes but oh well
 MINUTE_DELAY = 60
+HOUR_DELAY = MINUTE_DELAY * 10 * 3 # actually 10 minutes but oh well
 
 def hourly_update_players(pm: PlayerManager, stop_event):
     while not stop_event.is_set():
         try:
             logging.info(f"Beginning hourly player check at {datetime.now()}")
             for player in pm.players:
-                if not player in pm.player_queue:
+                if player not in pm.player_queue:
                     player.next_match = pm.get_next_match(player)
                     print(f"got player {player.name} with match {player.next_match}")
                     if player.next_match and player.next_match.is_soon():
