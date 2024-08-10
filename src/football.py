@@ -2,6 +2,7 @@ import logging
 from datetime import datetime, timedelta, timezone
 from json import load
 from queue import Queue
+from random import randint
 from typing import Optional, Tuple, Union
 
 from mobfot.client import MobFot
@@ -71,7 +72,7 @@ class Match:
             )
         except KeyError as e:
             print(f'Error: missing required field - {str(e)}')
-            with open('broken.json', 'w') as f:
+            with open(f'broken-{randint(1, 5000)}.json', 'w') as f:
                 f.write(json_dict)
         except Exception as e:
             print(f'Error: unexpected error occured - {str(e)}')
