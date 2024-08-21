@@ -2,7 +2,6 @@ import logging
 from datetime import datetime, timedelta, timezone
 from json import load
 from queue import Queue
-from random import randint
 from typing import Optional, Tuple, Union
 
 from mobfot.client import MobFot
@@ -134,7 +133,6 @@ class PlayerManager:
         team_details = self.fotmob.get_team(player.team_id, tab="fixtures")
         try:
             next_match_id = team_details["fixtures"]["allFixtures"]["nextMatch"]["id"]
-            print(next_match_id)
             match_details = self.fotmob.get_match_details(next_match_id)
             match = Match.from_json(match_details)
             player.next_match = match
@@ -154,13 +152,17 @@ class PlayerManager:
             match.tweeted = old_tweeted
             player.next_match = match
         except Exception as e:
+            print(e)
+            log
             return None
         
     def in_lineup(self, player: Player, match: Match):
         if not match.lineup:
+            print("not lineup")
             return False
         lineup = match.lineup.get("lineup")
         if not isinstance(lineup, list):
+            print("not list")
             return False
         for team in lineup:
             try:
