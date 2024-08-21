@@ -48,6 +48,16 @@
         "id" : 1421811,
         "team_id" : 8647,
         "team_name" : "Crawley Town" 
+    },
+    "Bashir Humphreys" : {
+        "id" : 1238058,
+        "team_id" : 8191,
+        "team_name" : "Burnley"
+    },
+    "Lesley Ugochukwu" : {
+        "id" : 1200631,
+        "team_id" : 8466,
+        "team_name" : "Southampton"
     }
 }
 
