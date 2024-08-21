@@ -40,6 +40,7 @@ class Match:
         self.finished = finished
         self.tweeted = self.setup_tweet_dict()
         self.info = None
+        self.stats = stats
 
     def setup_tweet_dict(self):
         return {enum.name : False for enum in GameEvent if enum.value > 4}
@@ -242,9 +243,9 @@ class PlayerManager:
         if assists > 0:
             report_parts.append(f"{int(assists)} assists")
 
-        base_response = f"{rating}."
+        base_response = f"{rating}"
         if not report_parts:
-            return base_response
+            return base_response + '.'
         elif len(report_parts) == 1:
             return base_response + ", including " + report_parts[0] + "."
         else:
@@ -347,12 +348,9 @@ class PlayerManager:
                         started_message = f"The {player.team_name} match with {player.name} has started! He's currently on the bench.\n\n{score_string}\n#CFC #Chelsea"                   
                     self.tweepy.tweet(started_message)
                     break
-                
+
                 case GameEvent.FINISHED:
-                    logging.info(f"{player.name}: GameEvent.FINISHED")
-                    resp = self.get_end_of_match_report(player)
-                    finished_message = f"""The {player.team_name} match with {player.name} has finished, he had a rating of {resp}\n\n{score_string}\n#CFC #Chelsea"""
-                    self.tweepy.tweet(finished_message)
+                    self.tweepy.tweet(value)
                     break
                 
                 case GameEvent.STARTING_LINEUP:

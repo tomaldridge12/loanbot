@@ -5,7 +5,7 @@ import threading
 from datetime import datetime
 from time import sleep
 
-from football import PlayerManager
+from football import Player, PlayerManager
 from utils import GameEvent
 
 MINUTE_DELAY = 60
@@ -21,13 +21,35 @@ def hourly_update_players(pm: PlayerManager, stop_event):
                     logging.info(f"Got player {player.name} with match {player.next_match}")
                     if player.next_match and player.next_match.is_soon():
                         if pm.in_lineup(player):
-                                logging.info(f"Adding {player.name} to queue")
-                                pm.player_queue.put(player)
+                            logging.info(f"Adding {player.name} to queue")
+                            pm.player_queue.put(player)
 
             logging.info(f"Ending hourly player check at {datetime.now()}")
             sleep(HOUR_DELAY)
         except KeyboardInterrupt:
             break
+
+def fetch_match_report_with_retries(pm: PlayerManager, player: Player, stop_event, max_retries:int=15, retry_interval:int=20):
+    retry_count = 0
+    
+    while retry_count < max_retries and not stop_event.is_set():
+        try:
+            resp = pm.get_end_of_match_report(player)
+            finished_message = f"""The {player.team_name} match with {player.name} has finished, he had a rating of {resp}\n\n#CFC #Chelsea"""
+            player.events_queue.put((GameEvent.FINISHED, finished_message))
+            pm.player_queue.remove(player)
+            logging.info(f"Removing {player.name} from queue")
+            player.next_match.tweeted["FINISHED"] = True
+            return  # Successfully fetched, exit the thread
+        except Exception as e:
+            print(e)
+            retry_count += 1
+            logging.info(f"Final stats not available yet, retrying... ({retry_count}/{max_retries})")
+            sleep(retry_interval)
+    
+    if retry_count >= max_retries:
+        logging.warning(f"Failed to get final stats for {player.name} after {max_retries} retries.")
+
 
 def minutely_update_players(pm: PlayerManager, stop_event):
     while not stop_event.is_set():
@@ -55,10 +77,8 @@ def minutely_update_players(pm: PlayerManager, stop_event):
 
                 if player.next_match.finished:
                     if not player.next_match.tweeted["FINISHED"]:
-                        player.events_queue.put(GameEvent.FINISHED)
-                        pm.player_queue.remove(player)
-                        logging.info(f"Removing {player.name} from queue")
-                        player.next_match.tweeted["FINISHED"] = True
+                        logging.info(f"{player.name}: GameEvent.FINISHED")
+                        threading.Thread(target=fetch_match_report_with_retries, args=(pm, player, stop_event), daemon=True).start()
                 
                 pm.handle_events(player)
 
