@@ -159,8 +159,8 @@ class PlayerManager:
         for lineup in match.lineup.values():
             if isinstance(lineup, dict) and 'id' in lineup:
                 if lineup['id'] == player.team_id:
-                  starters = lineup['starters']
-                  subs = lineup['subs']
+                  starters = lineup.get('starters', [])
+                  subs = lineup.get('subs', [])
 
         for _player in starters:
             if _player['id'] == player.id:
