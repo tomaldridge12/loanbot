@@ -20,7 +20,7 @@ def hourly_update_players(pm: PlayerManager, stop_event):
                     player.next_match = pm.get_next_match(player)
                     logging.info(f"Got player {player.name} with match {player.next_match}")
                     if player.next_match and player.next_match.is_soon():
-                        if pm.in_lineup(player, player.next_match):
+                        if pm.in_lineup(player):
                                 logging.info(f"Adding {player.name} to queue")
                                 pm.player_queue.put(player)
 
@@ -89,11 +89,11 @@ if __name__ == "__main__":
     # Start API threads
     logging.info("Starting threads...")
     stop_event = threading.Event()
-    events_update = threading.Thread(target=minutely_update_players, args=(pm,stop_event), daemon=True)
     hourly_update = threading.Thread(target=hourly_update_players, args=(pm,stop_event), daemon=True)
+    events_update = threading.Thread(target=minutely_update_players, args=(pm,stop_event), daemon=True)
 
-    hourly_update.start()
     events_update.start()
+    hourly_update.start()
     
     # Keep main thread alive and prepare for exiting
     try:

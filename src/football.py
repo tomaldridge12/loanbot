@@ -1,4 +1,5 @@
 import logging
+from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from json import load
 from queue import Queue
@@ -17,7 +18,8 @@ class Match:
                  lineup: dict,
                  header: dict,
                  started: bool = False,
-                 finished: bool = False
+                 finished: bool = False,
+                 stats: dict = None
                  ):
         """
         Initialize a Match object.
@@ -37,6 +39,7 @@ class Match:
         self.started = started
         self.finished = finished
         self.tweeted = self.setup_tweet_dict()
+        self.info = None
 
     def setup_tweet_dict(self):
         return {enum.name : False for enum in GameEvent if enum.value > 4}
@@ -53,16 +56,21 @@ class Match:
             general = json_dict.get("general", {})
             content = json_dict.get("content", {})
             if not (general or content):
+                print("Couldn't get general or content fields from JSON")
                 return None
             
+            with open('test.json', 'w') as f:
+                f.write(str(json_dict))
+
             return cls(
                 id=general.get("matchId"),
                 league_name=general.get("leagueName"),
                 general=general,
                 header=json_dict.get("header", {}),
-                lineup=content.get("lineup"),
+                lineup=content.get("lineup2"),
                 started=general.get("started"),
-                finished=general.get("finished")
+                finished=general.get("finished"),
+                stats=content.get("playerStats")
             )
         except Exception as e:
             print(f"Error parsing JSON: {str(e)}")
@@ -109,9 +117,8 @@ class Player:
         self.team_name = team_name
         self.next_match = None
         self.starting = False
-        self.position = None
         self.events_queue = Queue()
-        self.previous_events = {}
+        self.last_processed_events = defaultdict(lambda: -1)
         self.info = None
 
 class PlayerManager:
@@ -136,11 +143,38 @@ class PlayerManager:
             match_details = self.fotmob.get_match_details(next_match_id)
             match = Match.from_json(match_details)
             player.next_match = match
+            self.update_player_info(player, match)
             return match
         except Exception as e:
             print(e)
             return None
         # TODO: log errors
+
+    def update_player_info(self, player: Player, match: Match):
+        if not match.lineup:
+            print(f"Getting lineup2 from content field failed for {player.name}")
+            return
+
+        for lineup in match.lineup.values():
+            if isinstance(lineup, dict) and 'id' in lineup:
+                if lineup['id'] == player.team_id:
+                  starters = lineup['starters']
+                  subs = lineup['subs']
+
+        for _player in starters:
+            if _player['id'] == player.id:
+                player.starting = True
+                player.next_match.info = _player
+                return
+        
+        for _player in subs:
+            if _player['id'] == player.id:
+                player.starting = False
+                player.next_match.info = _player
+                return
+        
+        # Otherwise, 
+        player.next_match.info = None
 
     def update_match(self, player: Player, match: Optional[Match]):
         if not match:
@@ -151,52 +185,17 @@ class PlayerManager:
             match = Match.from_json(match_details)
             match.tweeted = old_tweeted
             player.next_match = match
+            self.update_player_info(player, match)
         except Exception as e:
             print(e)
-            log
             return None
         
-    def in_lineup(self, player: Player, match: Match):
-        if not match.lineup:
-            print("not lineup")
+    def in_lineup(self, player: Player) -> bool:
+        if player.next_match.info:
+            return True
+        else:
             return False
-        lineup = match.lineup.get("lineup")
-        if not isinstance(lineup, list):
-            print("not list")
-            return False
-        for team in lineup:
-            try:
-                team_id = team["teamId"]
-            except KeyError:
-                # Lineup not available yet
-                return False
-            if team_id == player.team_id:
-                team_lineup = team
-                break
-            
-        if not team_lineup:
-            return False
-        
-        try:
-            players = team_lineup["players"]
-        except KeyError:
-            return False
-        
-        for position in players:
-            for _player in position:
-                if _player["id"] == str(player.id):
-                    player.starting = True
-                    player.position = _player["positionStringShort"]
-                    player.info = _player
-                    return True
-
-        for _player in team_lineup["bench"]:
-            if _player["id"] == str(player.id):
-                player.info = _player
-                return True    
-
-        return False
-
+    
     def get_opponent(self, player: Player) -> str:
         '''
         Return the name of the opponent in the upcoming match.
@@ -206,104 +205,88 @@ class PlayerManager:
         opponent = [team["name"] for team in player.next_match.header["teams"] if team["name"] != player.team_name][0]
         return opponent
 
-    def get_end_of_match_stats(self, player: Player) -> Union[str, Tuple[int, float, int, int]]:
+    def get_end_of_match_report(self, player: Player) -> str:
         '''
-        This function retrieves the end of match statistics for a player.
+        This function retrieves the end of match report for a player.
         
         returns:
-            Tuple[int, float, int, int]: A tuple containing the player's rating, minutes played, goals scored, and assists provided.
+            str: a string containing the match report
         '''
-        player_info = player.info
-        try:
-            player_stats = player_info['stats'][0]['stats']
-        except IndexError:
-            return "Did not play"
-        print(player_stats)
-
+        stats = player.next_match.stats
+        for _id, _items in stats.items():
+            if _id == str(player.id):
+                try:
+                    player_stats = _items['stats'][0]['stats']
+                except IndexError:
+                    return "Did not play"
+                break
+        
         rating = player_stats['FotMob rating']['stat']['value']
-        # TODO: fix minutes played. this still crashes the app
-        minutes_played = None
-                                                                            
-        if player_info["position"] == "Keeper":
-            saves = player_stats['Saves']['stat']['value']
-            conceded = player_stats['Goals conceded']['stat']['value']
-            match_stats = (rating, minutes_played, saves, conceded)
-        else:
-            goals = player_stats['Goals']['stat']['value']
-            assists = player_stats['Assists']['stat']['value']
-            match_stats = (rating, minutes_played, goals, assists)
+        accurate_passes = player_stats['Accurate passes']['stat']['value']
+        total_passes = player_stats['Accurate passes']['stat']['total']
+        passing_perc = round(accurate_passes / total_passes * 100)
+        chances_created = player_stats['Chances created']['stat']['value']
+        shots = player_stats['Total shots']['stat']['value']
+        goals = player_stats['Goals']['stat']['value']
+        assists = player_stats['Assists']['stat']['value']
 
-        return match_stats
+        report_parts = []
+        if passing_perc > 70:
+            report_parts.append(f"{int(passing_perc)}% passing percentage")
+        if chances_created > 0:
+            report_parts.append(f"{int(chances_created)} chances created")
+        if shots > 0:
+            report_parts.append(f"{int(shots)} shots")
+        if goals > 0:
+            report_parts.append(f"{int(goals)} goals")
+        if assists > 0:
+            report_parts.append(f"{int(assists)} assists")
+
+        base_response = f"{rating}."
+        if not report_parts:
+            return base_response
+        elif len(report_parts) == 1:
+            return base_response + ", including " + report_parts[0] + "."
+        else:
+            last_part = report_parts.pop()
+            return base_response + ", including " + ", ".join(report_parts) + " and " + last_part + "."
+
     
     def check_for_new_events(self, player: Player) -> Tuple[dict, dict]:
-        def check_updated(events: dict, previous_events: dict) -> dict:
-            # Get events that have been updated, i.e. goals/assist tally
-            updated_events = {k: (previous_events[k], events[k]) for k in previous_events if k in events and previous_events[k] != events[k]}
-            return updated_events
-        
-        def check_new(events: dict, previous_events: dict) -> dict:
-            # Get new events that arent in the previous events dictionary
-            new_events = {k: events[k] for k in events if k not in previous_events}
-            return new_events
+        def unwrap_events(event: dict):
+            event_type = event['type']
+            event_time = event['time']
+            if event_time > player.last_processed_events[event_type]:
+                player.last_processed_events[event_type] = event_time
+                player.events_queue.put(get_event_type(event_type, event_time))
         
         def get_event_type(key: str, value: str) -> Tuple[GameEvent, str]:
             # Handle each API return key and return the correct enum value
-            if key == 'g':
+            if key == 'goal':
                 return GameEvent.GOAL
-            elif key == 'as':
+            elif key == 'assist':
                 return GameEvent.ASSIST
-            elif key == 'yc':
+            elif key == 'yellowCard':
                 return GameEvent.YELLOW_CARD
-            elif key == 'rc':
+            elif key == 'redCard':
                 return GameEvent.RED_CARD
-            elif key == 'sub':
-                for k, v in value.items():
-                    if k == 'subbedIn':
-                        return (GameEvent.SUB_ON, v)
-                    elif k == 'subbedOut':
-                        return (GameEvent.SUB_OFF, v)
-                    else:
-                        print(f"Unknown key {key} with value {value}")
+            elif key == 'subIn':
+                return (GameEvent.SUB_ON, value)
+            elif key == 'subOut':
+                return (GameEvent.SUB_OFF, value)
             else:
                 print(f"Unknown key {key} with value {value}")
-            logging.info(f"Event {k} with value {v}")
+
+            logging.info(f"Event {key} with value {value}")
+            
+        game_events = player.next_match.info["performance"]["events"]
+        sub_events = player.next_match.info["performance"]["substitutionEvents"]
         
-        if player.next_match:
-            # Get current events and check for new/updated events
-            for team in player.next_match.lineup["lineup"]:
-                team_id = team["teamId"]
-                if team_id == player.team_id:
-                    team_lineup = team
-                    break
+        for event in game_events:
+            unwrap_events(event)
 
-            for position in team_lineup["players"]:
-                for _player in position:
-                    if _player["id"] == str(player.id):
-                        player_info = _player
-                        break
-
-            for _player in team_lineup["bench"]:
-                if _player["id"] == str(player.id):
-                    player_info = _player
-                    break
-            
-            events = player_info["events"]
-            sub_events = {}
-            updated_events = check_updated(events, player.previous_events)
-            new_events = check_new(events, player.previous_events)
-            if "sub" in updated_events.keys():
-                sub_events = check_new(updated_events["sub"][1], updated_events["sub"][0])    
-            player.previous_events = events
-            
-            # Add new events to event queue
-            for k, v in updated_events.items():
-                player.events_queue.put(get_event_type(k, v))
-                
-            for k, v in new_events.items():
-                player.events_queue.put(get_event_type(k, v))
-
-            for k, v in sub_events.items():
-                player.events_queue.put(get_event_type(k, v))
+        for event in sub_events:
+            unwrap_events(event)
         
     def handle_events(self, player: Player) -> None:
         self.check_for_new_events(player)
@@ -367,37 +350,15 @@ class PlayerManager:
                 
                 case GameEvent.FINISHED:
                     logging.info(f"{player.name}: GameEvent.FINISHED")
-                    resp = self.get_end_of_match_stats(player)
-                    if isinstance(resp, tuple):
-                        rating, minutes_played, goals, assists = resp
-                        played = True
-                    else:
-                        played = False
-                    
-                    if played:
-                        if player.info["position"] == "Keeper":
-                            rating, minutes_played, saves, conceded = resp
-                            finished_message = f"""The {player.team_name} match with {player.name} has finished, he made {saves} save(s) and conceded {conceded} goals. He had a rating of {rating}.\n\n{score_string}\n#CFC #Chelsea"""
-                        else:
-                            rating, minutes_played, goals, assists = resp
-                            if goals > 0 and assists > 0:
-                                finished_message = f"""The {player.team_name} match with {player.name} has finished, he scored {goals} goal(s) and assisted {assists} time(s)! FotMob rated him {rating}.\n\n{score_string}\n#CFC #Chelsea"""
-                            elif goals > 0:
-                                finished_message = f"""The {player.team_name} match with {player.name} has finished, he scored {goals} goal(s)! FotMob rated him {rating}.\n\n{score_string}\n#CFC #Chelsea"""
-                            elif assists > 0:
-                                finished_message = f"""The {player.team_name} match with {player.name} has finished, he assisted {assists} time(s)! FotMob rated him {rating}.\n\n{score_string}\n#CFC #Chelsea"""
-                            else:
-                                finished_message = f"""The {player.team_name} match with {player.name} has finished, he had a rating of {rating}!\n\n{score_string}\n#CFC #Chelsea"""
-                    else:
-                        finished_message = f"""The {player.team_name} match with {player.name} has finished. He didn't come off the bench.\n\n#CFC #Chelsea"""
-                    
+                    resp = self.get_end_of_match_report(player)
+                    finished_message = f"""The {player.team_name} match with {player.name} has finished, he had a rating of {resp}\n\n{score_string}\n#CFC #Chelsea"""
                     self.tweepy.tweet(finished_message)
                     break
                 
                 case GameEvent.STARTING_LINEUP:
                     logging.info(f"{player.name}: GameEvent.STARTING_LINEUP")
                     opponent = self.get_opponent(player)
-                    starting_message = f"{player.name} is in the starting lineup at {player.position} for {player.team_name} against {opponent} in the {player.next_match.league_name}!\n\n#CFC #Chelsea"
+                    starting_message = f"{player.name} is in the starting lineup for {player.team_name} against {opponent} in the {player.next_match.league_name}!\n\n#CFC #Chelsea"
                     self.tweepy.tweet(starting_message)
                     break
                 

@@ -58,6 +58,11 @@
         "id" : 1200631,
         "team_id" : 8466,
         "team_name" : "Southampton"
+    },
+    "Gaga Slonina" : {
+        "id" : 1031220,
+        "team_id" : 8283,
+        "team_name" : "Barnsley"
     }
 }
 
