@@ -11,10 +11,10 @@ from PIL import Image
 class GameEvent(Enum):
     GOAL = 1
     ASSIST = 2
-    SUB_ON = 3
-    SUB_OFF = 4
-    YELLOW_CARD = 5
-    RED_CARD = 6
+    YELLOW_CARD = 3
+    RED_CARD = 4
+    SUB_ON = 5
+    SUB_OFF = 6
     STARTED = 7
     FINISHED = 8
     STARTING_LINEUP = 9
@@ -78,3 +78,11 @@ class ThreadSafeQueue:
             items = list(self._queue.queue)
         for item in items:
             yield item
+
+    def __contains__(self, item):
+        with self._lock:
+            return item in self._queue.queue
+
+    def __len__(self):
+        with self._lock:
+            return self._queue.qsize()

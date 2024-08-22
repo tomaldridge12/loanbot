@@ -1,10 +1,16 @@
 import requests
 from io import BytesIO
+from typing import Tuple
 
 from PIL import Image, ImageDraw, ImageFont
 
 
-def overlay_text(image, text, position, font_size=80, font_color=(255, 255, 255), font_path=None):
+def overlay_text(image: Image, 
+                 text: str, 
+                 position: Tuple[int, int], 
+                 font_size: int=80, 
+                 font_color: Tuple[int, int, int]=(255, 255, 255), 
+                 font_path: str=None):
     """
     Overlay text on an image.
     
@@ -27,7 +33,9 @@ def overlay_text(image, text, position, font_size=80, font_color=(255, 255, 255)
     draw.text(position, text, font=font, fill=font_color)
     return image
 
-def overlay_image(background_image, face_overlay_image, badge_overlay_image):
+def overlay_image(background_image: Image, 
+                  face_overlay_image: Image, 
+                  badge_overlay_image: Image):
      # Paste overlay on blue background
     background_image.paste(face_overlay_image, (30, 180), face_overlay_image)
  
@@ -42,7 +50,9 @@ def get_image_from_url(image_url: str) -> Image:
     image = Image.open(image_bytes, formats=["png"]).resize((180, 180)).convert("RGBA")
     return image
 
-def generate_image(player, type: str, score_dict: dict) -> Image:
+def generate_image(player, 
+                   type: str, 
+                   score_dict: dict) -> Image:
     badge_path = f"https://images.fotmob.com/image_resources/logo/teamlogo/{player.team_id}.png"
     player_path = f"https://images.fotmob.com/image_resources/playerimages/{player.id}.png"
     background_path = "../background.jpg"

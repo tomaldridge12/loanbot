@@ -1,106 +1,99 @@
-import json
 import logging
 import os
 import threading
-import traceback
 
 from datetime import datetime
 from time import sleep
-from typing import List
 
-from football import FotMob, Player
-from utils import GameEvent, ThreadSafeQueue, TweepyClient
+from football import Player, PlayerManager
+from utils import GameEvent
 
-   
-def hourly_update_players(players: List[Player], in_match_players: ThreadSafeQueue, stop_event) -> None:
-    # repeat this every hour
+MINUTE_DELAY = 60
+HOUR_DELAY = MINUTE_DELAY * 10 * 3 # actually 10 minutes but oh well
+
+def hourly_update_players(pm: PlayerManager, stop_event):
     while not stop_event.is_set():
         try:
             logging.info(f"Beginning hourly player check at {datetime.now()}")
-            # Iterate through all players in the player list
-            for player in players:
-                match_id = fm.get_next_match_id(player)
-                if not match_id:
-                    logging.info(f"Could not get next match for {player.name}, skipping...")
-                    continue
-                try:
-                    player.match_info = fm.get_player_details_from_match(player, match_id)
-                except Exception as e:
-                    traceback.print_exc()
-                    logging.info(traceback.format_exc())
-                    continue
-
-                if isinstance(player.match_info, dict): # i.e. player is in lineup
-                    if not player.in_queue:
-                        if player.is_match_soon(player.match_info["match_details"]):
-                            in_match_players.put(player)
-                            player.in_queue = True
+            for player in pm.players:
+                if player not in pm.player_queue:
+                    player.next_match = pm.get_next_match(player)
+                    logging.info(f"Got player {player.name} with match {player.next_match}")
+                    if player.next_match and player.next_match.is_soon():
+                        if pm.in_lineup(player):
                             logging.info(f"Adding {player.name} to queue")
-            
+                            pm.player_queue.put(player)
+
             logging.info(f"Ending hourly player check at {datetime.now()}")
-            sleep(600)
+            sleep(HOUR_DELAY)
         except KeyboardInterrupt:
             break
-        
 
-def minutely_update_events(in_match_players: ThreadSafeQueue, stop_event) -> None:
-    # repeat this every couple of minutes
+def fetch_match_report_with_retries(pm: PlayerManager, player: Player, stop_event, max_retries:int=15, retry_interval:int=20):
+    retry_count = 0
+    
+    while retry_count < max_retries and not stop_event.is_set():
+        try:
+            resp = pm.get_end_of_match_report(player)
+            finished_message = f"""The {player.team_name} match with {player.name} has finished, he had a rating of {resp}\n\n#CFC #Chelsea"""
+            player.events_queue.put((GameEvent.FINISHED, finished_message))
+            pm.player_queue.remove(player)
+            logging.info(f"Removing {player.name} from queue")
+            player.next_match.tweeted["FINISHED"] = True
+            return  # Successfully fetched, exit the thread
+        except Exception as e:
+            print(e)
+            retry_count += 1
+            logging.info(f"Final stats not available yet, retrying... ({retry_count}/{max_retries})")
+            sleep(retry_interval)
+    
+    if retry_count >= max_retries:
+        logging.warning(f"Failed to get final stats for {player.name} after {max_retries} retries.")
+
+
+def minutely_update_players(pm: PlayerManager, stop_event):
     while not stop_event.is_set():
         try:
-            # Iterate through all players in the in_match_players queue
-            for player in in_match_players:
+            for player in pm.player_queue:
                 logging.info(f"Polling {player.name} at {datetime.now()}")
-                if isinstance(player.match_info, dict): # otherwise error message from get_player_details_from_match
-                    # Get most up to date match details
-                    try:
-                        player.match_info = fm.get_player_details_from_match(player, player.match_info["match_id"])
-                    except Exception as e:
-                        traceback.print_exc()
-                        logging.info(f"{traceback.format_exc()}")
-                        continue
+                pm.update_match(player, player.next_match)
+                
+                if player.starting:
+                    if not player.next_match.tweeted["STARTING_LINEUP"]:
+                        player.events_queue.put(GameEvent.STARTING_LINEUP)
+                        logging.info(f"{player.name}: GameEvent.STARTING_LINEUP")
+                        player.next_match.tweeted["STARTING_LINEUP"] = True
+                else:
+                    if not player.next_match.tweeted["BENCH_LINEUP"]:
+                        player.events_queue.put(GameEvent.BENCH_LINEUP)
+                        logging.info(f"{player.name}: GameEvent.BENCH_LINEUP")
+                        player.next_match.tweeted["BENCH_LINEUP"] = True
 
-                    # tweet starting lineup or bench lineup
-                    if not player.tweeted_lineup:
-                        if player.starting:
-                            player.events_queue.put(GameEvent.STARTING_LINEUP)
-                        else:
-                            player.events_queue.put(GameEvent.BENCH_LINEUP)
-                        player.tweeted_lineup = True
-                    
-                    # tweet kickoff tweet, but check if kickoff tweet already tweeted
-                    if player.match_info["started"] and not player.in_match:
+                if player.next_match.started and not player.next_match.finished:
+                    if not player.next_match.tweeted["STARTED"]:
                         player.events_queue.put(GameEvent.STARTED)
-                        player.in_match = True
-                    
-                    # tweet match end tweet, i.e. player performance etc
-                    # clear player.match_info
-                    if player.match_info["finished"] and player.in_match:
-                        player.events_queue.put(GameEvent.FINISHED)
-                        player.in_match = False
-                        try:
-                            in_match_players.remove(player)
-                            player.in_queue = False
-                            logging.info(f"Removing {player.name} from queue")
-                        except ValueError:
-                            print(f"Attempted to remove {player.name} from queue, but couldn't find it.")
+                        logging.info(f"{player.name}: GameEvent.STARTED")
+                        player.next_match.tweeted["STARTED"] = True
 
-                    # get player event details
-                    player.handle_events(tc, fm)
-            sleep(60)
+                if player.next_match.finished:
+                    if not player.next_match.tweeted["FINISHED"]:
+                        logging.info(f"{player.name}: GameEvent.FINISHED")
+                        threading.Thread(target=fetch_match_report_with_retries, args=(pm, player, stop_event), daemon=True).start()
+                
+                pm.handle_events(player)
+
+            sleep(MINUTE_DELAY)
         except KeyboardInterrupt:
             break
+
 
 def signal_handler(sig, frame):
     print("Exiting...")
     stop_event.set()
 
 if __name__ == "__main__":
-    # Instantiate clients
     LOGS_DIR = "../logs"
     IDS_PATH = "../ids.json"
-    fm = FotMob()
-    tc = TweepyClient()
-    in_match_players = ThreadSafeQueue()
 
     # Set up logging
     if not os.path.isdir(LOGS_DIR):
@@ -109,22 +102,18 @@ if __name__ == "__main__":
     logging.basicConfig(filename=logfile_name, level=logging.INFO)
     logging.info(f"Starting loanbot at {datetime.now()}")
 
-    # Load player list into Player array
-    with open(IDS_PATH, 'r') as f:
-        player_data = json.load(f)
-    
+    # Instantiate clients
     logging.info("Loading players list...")
-    players = [Player(name, data['id'], data['team_id'], data['team_name'])
-                for name, data in player_data.items()]
+    pm = PlayerManager(IDS_PATH)
     
     # Start API threads
     logging.info("Starting threads...")
     stop_event = threading.Event()
-    hourly_update = threading.Thread(target=hourly_update_players, args=(players,in_match_players,stop_event), daemon=True)
-    events_update = threading.Thread(target=minutely_update_events, args=(in_match_players,stop_event), daemon=True)
+    hourly_update = threading.Thread(target=hourly_update_players, args=(pm,stop_event), daemon=True)
+    events_update = threading.Thread(target=minutely_update_players, args=(pm,stop_event), daemon=True)
 
-    hourly_update.start()
     events_update.start()
+    hourly_update.start()
     
     # Keep main thread alive and prepare for exiting
     try:
@@ -134,5 +123,3 @@ if __name__ == "__main__":
         logging.info("Exiting...")
         print("Exiting...")
         stop_event.set()
-
-            
