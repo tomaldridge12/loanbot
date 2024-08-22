@@ -35,7 +35,7 @@ def fetch_match_report_with_retries(pm: PlayerManager, player: Player, stop_even
     while retry_count < max_retries and not stop_event.is_set():
         try:
             resp = pm.get_end_of_match_report(player)
-            finished_message = f"""The {player.team_name} match with {player.name} has finished, he had a rating of {resp}\n\n#CFC #Chelsea"""
+            finished_message = f"""The {player.team_name} match with {player.name} has finished, he had a rating of {resp}"""
             player.events_queue.put((GameEvent.FINISHED, finished_message))
             pm.player_queue.remove(player)
             logging.info(f"Removing {player.name} from queue")
