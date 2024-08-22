@@ -350,7 +350,7 @@ class PlayerManager:
                     break
 
                 case GameEvent.FINISHED:
-                    self.tweepy.tweet(value)
+                    self.tweepy.tweet(value + f"\n\n{score_string}\n#CFC #Chelsea")
                     break
                 
                 case GameEvent.STARTING_LINEUP:
