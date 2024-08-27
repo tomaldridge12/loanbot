@@ -215,6 +215,12 @@ class PlayerManager:
         returns:
             str: a string containing the match report
         '''
+        def get_stat_value(player_stats, stat_name):
+            try:
+                return player_stats[stat_name]['stat']['value']
+            except KeyError:
+                return 0
+            
         stats = player.next_match.stats
         for _id, _items in stats.items():
             if _id == str(player.id):
@@ -228,10 +234,11 @@ class PlayerManager:
         accurate_passes = player_stats['Accurate passes']['stat']['value']
         total_passes = player_stats['Accurate passes']['stat']['total']
         passing_perc = round(accurate_passes / total_passes * 100)
-        chances_created = player_stats['Chances created']['stat']['value']
-        shots = player_stats['Total shots']['stat']['value']
-        goals = player_stats['Goals']['stat']['value']
-        assists = player_stats['Assists']['stat']['value']
+        
+        chances_created = get_stat_value(player_stats, 'Chances created')
+        shots = get_stat_value(player_stats, 'Total shots')
+        goals = get_stat_value(player_stats, 'Goals')
+        assists = get_stat_value(player_stats, 'Assists')
 
         report_parts = []
         if passing_perc > 70:
