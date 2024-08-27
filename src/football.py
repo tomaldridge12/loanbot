@@ -63,12 +63,14 @@ class Match:
             with open('test.json', 'w') as f:
                 f.write(str(json_dict))
 
+            
+
             return cls(
                 id=general.get("matchId"),
                 league_name=general.get("leagueName"),
                 general=general,
                 header=json_dict.get("header", {}),
-                lineup=content.get("lineup2"),
+                lineup=content.get('lineup') or content.get('lineup2') or None,
                 started=general.get("started"),
                 finished=general.get("finished"),
                 stats=content.get("playerStats")
@@ -280,8 +282,11 @@ class PlayerManager:
 
             logging.info(f"Event {key} with value {value}")
             
-        game_events = player.next_match.info["performance"]["events"]
-        sub_events = player.next_match.info["performance"]["substitutionEvents"]
+        try: 
+            game_events = player.next_match.info["performance"]["events"]
+            sub_events = player.next_match.info["performance"]["substitutionEvents"]
+        except KeyError:
+            return
         
         for event in game_events:
             unwrap_events(event)
