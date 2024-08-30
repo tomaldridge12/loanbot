@@ -73,6 +73,16 @@
          "id" : 1226849,
          "team_id" : 9896,
          "team_name" : "Shrewsbury Town"
+    },
+    "Djordje Petrovic" : {
+        "id" : 1067256,
+        "team_id" : 9848,
+        "team_name" : "Strasbourg" 
+    },
+    "Kepa Arrizabalaga" : {
+        "id" : 317564,
+        "team_id" : 8678,
+        "team_name" : "AFC Bournemouth" 
     }
 }
 
