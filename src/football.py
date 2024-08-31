@@ -265,7 +265,7 @@ class PlayerManager:
     def check_for_new_events(self, player: Player) -> Tuple[dict, dict]:
         def unwrap_events(event: dict):
             event_type = event.get('type')
-            event_time = event.get('time', None)
+            event_time = event.get('time', datetime.now())
 
             if event_time > player.last_processed_events[event_type]:
                 player.last_processed_events[event_type] = event_time
