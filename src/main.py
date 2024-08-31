@@ -80,7 +80,10 @@ def minutely_update_players(pm: PlayerManager, stop_event):
                         logging.info(f"{player.name}: GameEvent.FINISHED")
                         threading.Thread(target=fetch_match_report_with_retries, args=(pm, player, stop_event), daemon=True).start()
                 
-                pm.handle_events(player)
+                try:
+                    pm.handle_events(player)
+                except Exception as e:
+                    logging.info(f'{e} at {datetime.now()}')
 
             sleep(MINUTE_DELAY)
         except KeyboardInterrupt:
