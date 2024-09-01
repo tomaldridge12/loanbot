@@ -10,6 +10,8 @@ from mobfot.client import MobFot
 from image import generate_image
 from utils import GameEvent, ThreadSafeQueue, TweepyClient
 
+logger = logging.getLogger('LoanBot')
+
 class Match:
     def __init__(self,
                  id: int,
@@ -57,13 +59,11 @@ class Match:
             general = json_dict.get("general", {})
             content = json_dict.get("content", {})
             if not (general or content):
-                print("Couldn't get general or content fields from JSON")
+                logger.error("Couldn't get general or content fields from JSON")
                 return None
             
             with open('test.json', 'w') as f:
                 f.write(str(json_dict))
-
-            
 
             return cls(
                 id=general.get("matchId"),
@@ -76,7 +76,7 @@ class Match:
                 stats=content.get("playerStats")
             )
         except Exception as e:
-            print(f"Error parsing JSON: {str(e)}")
+            logger.exception(f"Error parsing JSON: {str(e)}")
             return None
 
     def is_soon(self):
@@ -134,7 +134,7 @@ class PlayerManager:
     def load_players(self, json_file: str):
         with open(json_file, 'r') as f:
             json_dict = load(f)
-        logging.info(f"Found {len(json_dict)} players.")
+        logger.info(f"Found {len(json_dict)} players.")
         
         return [Player(name, data['id'], data['team_id'], data['team_name'])
                 for name, data in json_dict.items()]
@@ -149,13 +149,12 @@ class PlayerManager:
             self.update_player_info(player, match)
             return match
         except Exception as e:
-            print(e)
+            logger.exception(e)
             return None
-        # TODO: log errors
 
     def update_player_info(self, player: Player, match: Match):
         if not match.lineup:
-            print(f"Getting lineup2 from content field failed for {player.name}")
+            logger.error(f"Getting lineup2 from content field failed for {player.name}")
             return
 
         for lineup in match.lineup.values():
@@ -190,7 +189,7 @@ class PlayerManager:
             player.next_match = match
             self.update_player_info(player, match)
         except Exception as e:
-            print(e)
+            logger.exception(e)
             return None
         
     def in_lineup(self, player: Player) -> bool:
