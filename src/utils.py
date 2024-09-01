@@ -1,8 +1,9 @@
 import logging
 from enum import Enum
 from io import BytesIO
+from logging.handlers import RotatingFileHandler
 from queue import Queue
-from threading import Lock
+from threading import excepthook, Lock
 
 import tweepy
 from dotenv import dotenv_values
@@ -19,6 +20,27 @@ class GameEvent(Enum):
     FINISHED = 8
     STARTING_LINEUP = 9
     BENCH_LINEUP = 10
+
+def setup_logger(logfile_name: str):
+    logger = logging.getLogger('LoanBot')
+    logger.setLevel(logging.DEBUG)
+
+    console_handler = logging.StreamHandler()
+    file_handler = logging.FileHandler(logfile_name)
+    
+    log_format = logging.Formatter('%(asctime)s::%(levelname)s - %(message)s')
+    
+    console_handler.setFormatter(log_format)
+    file_handler.setFormatter(log_format)
+
+    logger.addHandler(console_handler)
+    logger.addHandler(file_handler)
+
+    return logger
+
+def log_unhandled_exception(args):
+    logger = logging.getLogger('LoanBot')
+    logger.critical("Unhandled exception in thread", exc_info=(args.exc_type, args.exc_value, args.exc_traceback))
 
 class TweepyClient:
     def __init__(self):
