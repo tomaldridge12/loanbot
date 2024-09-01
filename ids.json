@@ -66,8 +66,8 @@
     },
     "Armando Broja" : {
         "id" : 1077975,
-        "team_id" : 9902,
-        "team_name" : "Ipswich Town"
+        "team_id" : 8668,
+        "team_name" : "Everton"
     },
     "Leo Castledine" : {
          "id" : 1226849,
@@ -83,6 +83,21 @@
         "id" : 317564,
         "team_id" : 8678,
         "team_name" : "AFC Bournemouth" 
+    },
+    "Ronnie Stutter" : {
+        "id" : 1229118,
+        "team_id" : 9792,
+        "team_name" : "Burton Albion" 
+    },
+    "Raheem Sterling" : {
+        "id" : 246575,
+        "team_id" : 9825,
+        "team_name" : "Arsenal" 
+    },
+    "Trevoh Chalobah" : {
+        "id" : 793907,
+        "team_id" : 9826,
+        "team_name" : "Crystal Palace" 
     }
 }
 
