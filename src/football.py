@@ -62,9 +62,6 @@ class Match:
                 logger.error("Couldn't get general or content fields from JSON")
                 return None
             
-            with open('test.json', 'w') as f:
-                f.write(str(json_dict))
-
             return cls(
                 id=general.get("matchId"),
                 league_name=general.get("leagueName"),
@@ -125,10 +122,10 @@ class Player:
         self.info = None
 
 class PlayerManager:
-    def __init__(self, json_file: str):
+    def __init__(self, json_file: str, debug_mode: bool):
         self.players = self.load_players(json_file)
         self.fotmob = MobFot()
-        self.tweepy = TweepyClient()
+        self.tweepy = TweepyClient(debug=debug_mode)
         self.player_queue = ThreadSafeQueue()
 
     def load_players(self, json_file: str):

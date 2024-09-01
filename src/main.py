@@ -1,8 +1,8 @@
 import logging
 import os
 import threading
-
 from datetime import datetime
+from sys import argv
 from time import sleep
 
 from football import Player, PlayerManager
@@ -99,6 +99,10 @@ def signal_handler(sig, frame):
     stop_event.set()
 
 if __name__ == "__main__":
+    if len(argv) == 2 and argv[1].lower()=="debug":
+        debug_mode = True
+    else:
+        debug_mode = False
     LOGS_DIR = "../logs"
     IDS_PATH = "../ids.json"
 
@@ -112,7 +116,7 @@ if __name__ == "__main__":
 
     # Instantiate clients
     logger.info("Loading players list...")
-    pm = PlayerManager(IDS_PATH)
+    pm = PlayerManager(IDS_PATH, debug_mode=debug_mode)
     
     # Start API threads
     logger.info("Starting threads...")

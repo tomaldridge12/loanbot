@@ -43,7 +43,8 @@ def log_unhandled_exception(args):
     logger.critical("Unhandled exception in thread", exc_info=(args.exc_type, args.exc_value, args.exc_traceback))
 
 class TweepyClient:
-    def __init__(self):
+    def __init__(self, debug=False):
+        self.debug = debug
         config = dotenv_values("../.env")
 
         auth = tweepy.OAuth1UserHandler(config["API_KEY"], config["API_KEY_SECRET"])
@@ -55,7 +56,8 @@ class TweepyClient:
     
     def tweet(self, string: str) -> None:
         try:
-            self.client_v2.create_tweet(text=string, user_auth=True)
+            if not self.debug:
+                self.client_v2.create_tweet(text=string, user_auth=True)
             logging.info(f"Tweeted: {string}")
         except Exception as e:
             print(e)
@@ -65,8 +67,9 @@ class TweepyClient:
         image.save(b, "PNG")
         b.seek(0)
         try:
-            ret = self.client_v1.media_upload(filename="dummy", file=b)
-            self.client_v2.create_tweet(text=string, media_ids=[ret.media_id_string])
+            if not self.debug:
+                ret = self.client_v1.media_upload(filename="dummy", file=b)
+                self.client_v2.create_tweet(text=string, media_ids=[ret.media_id_string])
             logging.info(f"Tweeted with image: {string}")        
         except Exception as e:
             print(e)
